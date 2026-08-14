@@ -1,14 +1,24 @@
 from __future__ import annotations
 
 import sys
-from pathlib import Path
+from datetime import datetime
 
 try:
-    from PyQt5.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer
-    from PyQt5.QtGui import QColor, QFont, QPainter, QLinearGradient
-    from PyQt5.QtWidgets import QApplication, QFrame, QHBoxLayout, QLabel, QPushButton, QStackedWidget, QVBoxLayout, QWidget
+    from PyQt5.QtCore import Qt, QTimer
+    from PyQt5.QtGui import QColor, QFont, QLinearGradient, QPainter, QPainterPath
+    from PyQt5.QtWidgets import (
+        QApplication,
+        QFrame,
+        QGraphicsDropShadowEffect,
+        QHBoxLayout,
+        QLabel,
+        QPushButton,
+        QStackedWidget,
+        QVBoxLayout,
+        QWidget,
+    )
 except ImportError as exc:  # pragma: no cover
-    raise SystemExit("Danenone necesita PyQt5 o PySide6 en la sesión gráfica") from exc
+    raise SystemExit("Influent Danenone necesita PyQt5 o PySide6 en la sesión gráfica") from exc
 
 
 class AcrylicPanel(QFrame):
@@ -16,49 +26,77 @@ class AcrylicPanel(QFrame):
         super().__init__(parent)
         self.setObjectName("AcrylicPanel")
         self.setAttribute(Qt.WA_TranslucentBackground)
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(28)
+        shadow.setOffset(0, 10)
+        shadow.setColor(QColor(0, 0, 0, 80))
+        self.setGraphicsEffect(shadow)
 
 
 class Notch(AcrylicPanel):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(230, 38)
+        self.setFixedSize(282, 48)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 4, 16, 4)
-        layout.addWidget(QLabel("Danenone"))
+        layout.setContentsMargins(18, 6, 18, 6)
+        brand = QLabel("Influent")
+        brand.setObjectName("BrandMark")
+        layout.addWidget(brand)
         layout.addStretch()
-        layout.addWidget(QLabel("⌁  09:41"))
+        self.clock = QLabel()
+        self.clock.setObjectName("Clock")
+        layout.addWidget(self.clock)
+        self.refresh_clock()
+        timer = QTimer(self)
+        timer.timeout.connect(self.refresh_clock)
+        timer.start(1000)
+
+    def refresh_clock(self):
+        self.clock.setText(datetime.now().strftime("%H:%M"))
 
 
 class ControlCenter(AcrylicPanel):
     def __init__(self, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 18, 18, 18)
         title = QLabel("Centro de control")
         title.setObjectName("PanelTitle")
         layout.addWidget(title)
+        subtitle = QLabel("Influent Danenone")
+        subtitle.setObjectName("Muted")
+        layout.addWidget(subtitle)
         for label in ("Wi‑Fi  ·  Conectado", "Bluetooth  ·  Activado", "Modo oscuro  ·  Activado", "Brillo  ·  80%"):
             button = QPushButton(label)
             button.setCheckable(True)
             button.setChecked(True)
             layout.addWidget(button)
+        layout.addStretch()
 
 
 class DesktopPage(AcrylicPanel):
     def __init__(self, page: int, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(48, 82, 48, 96)
-        heading = QLabel(f"Página {page + 1}")
+        layout.setContentsMargins(56, 92, 56, 50)
+        heading = QLabel("Influent Danenone")
         heading.setObjectName("PageHeading")
         layout.addWidget(heading)
-        sub = QLabel("Tus aplicaciones y widgets, organizados horizontalmente")
+        sub = QLabel(f"Página {page + 1}  ·  un escritorio compacto, claro y fluido")
         sub.setObjectName("Muted")
         layout.addWidget(sub)
         layout.addStretch()
         widget_row = QHBoxLayout()
-        for icon, label in (("▦", "Launchpad"), ("▤", "Archivos"), ("◉", "FoundStore"), ("⚙", "Ajustes")):
-            card = QPushButton(f"{icon}\n{label}")
-            card.setMinimumSize(132, 92)
+        widget_row.setSpacing(16)
+        for icon, label, detail in (
+            ("▦", "Launchpad", "Aplicaciones"),
+            ("▤", "Archivos", "Explorador"),
+            ("◉", "FoundStore", "Aplicaciones Fluthin"),
+            ("⚙", "Ajustes", "Sistema"),
+        ):
+            card = QPushButton(f"{icon}\n{label}\n{detail}")
+            card.setObjectName("AppCard")
+            card.setMinimumSize(156, 112)
             widget_row.addWidget(card)
         layout.addLayout(widget_row)
 
@@ -66,7 +104,7 @@ class DesktopPage(AcrylicPanel):
 class DanenoneWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Danenone")
+        self.setWindowTitle("Influent Danenone")
         self.resize(1280, 800)
         self.setMinimumSize(960, 600)
         self.setObjectName("Root")
@@ -75,36 +113,40 @@ class DanenoneWindow(QWidget):
         root.setSpacing(0)
 
         self.pages = QStackedWidget()
-        self.pages.addWidget(DesktopPage(0))
-        self.pages.addWidget(DesktopPage(1))
-        self.pages.addWidget(DesktopPage(2))
+        for page in range(4):
+            self.pages.addWidget(DesktopPage(page))
         root.addWidget(self.pages, 1)
 
         self.notch = Notch(self)
         self.notch.raise_()
         self.control = ControlCenter(self)
-        self.control.setFixedWidth(280)
+        self.control.setFixedWidth(300)
         self.control.hide()
 
         taskbar = AcrylicPanel()
-        taskbar.setFixedHeight(78)
+        taskbar.setFixedHeight(86)
         bar = QHBoxLayout(taskbar)
-        bar.setContentsMargins(28, 12, 28, 12)
+        bar.setContentsMargins(30, 12, 30, 12)
         launch = QPushButton("◈")
+        launch.setObjectName("DockButton")
         launch.setToolTip("Launchpad")
         launch.clicked.connect(lambda: self.pages.setCurrentIndex((self.pages.currentIndex() + 1) % self.pages.count()))
         bar.addWidget(launch)
         bar.addStretch()
-        for text in ("◌", "◍", "▣"):
+        for text, tip in (("◌", "Ventanas"), ("◍", "Archivos"), ("▣", "FoundStore")):
             button = QPushButton(text)
-            button.setFixedSize(48, 48)
+            button.setObjectName("DockButton")
+            button.setToolTip(tip)
+            button.setFixedSize(52, 52)
             bar.addWidget(button)
         control = QPushButton("⌁")
-        control.setFixedSize(48, 48)
+        control.setObjectName("DockButton")
+        control.setToolTip("Centro de control")
+        control.setFixedSize(52, 52)
         control.clicked.connect(self.toggle_control_center)
         bar.addWidget(control)
         root.addWidget(taskbar)
-        self.dots = QLabel("●  ○  ○")
+        self.dots = QLabel("●  ○  ○  ○")
         self.dots.setAlignment(Qt.AlignCenter)
         self.dots.setObjectName("Dots")
         root.addWidget(self.dots)
@@ -113,25 +155,27 @@ class DanenoneWindow(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.notch.move((self.width() - self.notch.width()) // 2, 10)
-        self.control.move(self.width() - self.control.width() - 22, 62)
+        self.notch.move((self.width() - self.notch.width()) // 2, 12)
+        self.control.move(self.width() - self.control.width() - 22, 72)
 
     def toggle_control_center(self):
+        self.control.setVisible(not self.control.isVisible())
         if self.control.isVisible():
-            self.control.hide()
-            return
-        self.control.show()
-        self.control.raise_()
+            self.control.raise_()
 
     def apply_theme(self):
         self.setStyleSheet("""
-        #Root { background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #101827, stop:0.52 #243755, stop:1 #5b4672); color: #f7f9ff; }
-        #AcrylicPanel { background: rgba(24, 32, 52, 0.76); border: 1px solid rgba(255,255,255,0.16); border-radius: 22px; }
-        QPushButton { color: #f7f9ff; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 8px 14px; }
-        QPushButton:hover { background: rgba(255,255,255,0.20); }
-        QPushButton:checked { background: rgba(123, 192, 255, 0.34); }
-        #PageHeading { font-size: 32px; font-weight: 600; }
-        #PanelTitle { font-size: 18px; font-weight: 600; }
+        #Root { background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #080f24, stop:0.48 #172c59, stop:1 #4b2b68); color: #f8faff; }
+        #AcrylicPanel { background: rgba(20, 30, 58, 0.80); border: 1px solid rgba(255,255,255,0.18); border-radius: 24px; }
+        QPushButton { color: #f8faff; background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.13); border-radius: 17px; padding: 9px 14px; }
+        QPushButton:hover { background: rgba(255,255,255,0.21); }
+        QPushButton:checked { background: rgba(118, 190, 255, 0.38); }
+        #AppCard { font-size: 13px; line-height: 1.4; }
+        #DockButton { font-size: 22px; border-radius: 18px; }
+        #PageHeading { font-size: 34px; font-weight: 600; }
+        #PanelTitle { font-size: 19px; font-weight: 600; }
+        #BrandMark { font-size: 13px; font-weight: 700; color: #ff887f; }
+        #Clock { font-size: 12px; font-weight: 600; }
         #Muted, #Dots { color: rgba(255,255,255,0.68); }
         QLabel { background: transparent; }
         """)
@@ -139,8 +183,9 @@ class DanenoneWindow(QWidget):
 
 def main() -> int:
     app = QApplication(sys.argv)
-    app.setApplicationName("Danenone")
-    app.setFont(QFont("Inter", 10))
+    app.setApplicationName("Influent Danenone")
+    app.setOrganizationName("Influent")
+    app.setFont(QFont("DejaVu Sans", 10))
     window = DanenoneWindow()
     window.show()
     return app.exec_()
