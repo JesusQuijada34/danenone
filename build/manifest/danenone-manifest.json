@@ -1,0 +1,20 @@
+{
+  "distribution": "Danenone",
+  "version": "0.1.0-prototype",
+  "base": "Linux kernel with Debian-compatible userspace",
+  "ui": "Python + PyQt5 prototype",
+  "required_tools": [
+    "live-build",
+    "debootstrap",
+    "grub-mkrescue",
+    "xorriso",
+    "mksquashfs"
+  ],
+  "tool_status": {
+    "live-build": null,
+    "debootstrap": null,
+    "grub-mkrescue": null,
+    "xorriso": null,
+    "mksquashfs": null
+  }
+}

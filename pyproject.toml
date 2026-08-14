@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "danenone"
+version = "0.1.0"
+description = "Danenone Linux desktop shell and reproducible ISO builder"
+requires-python = ">=3.10"
+dependencies = ["requests>=2.31"]
+
+[project.optional-dependencies]
+qt = ["PyQt5>=5.15"]
+
+[project.scripts]
+danenone-shell = "danenone_shell.app:main"
+danenone-iso = "danenone_shell.iso_builder:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
