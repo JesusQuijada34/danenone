@@ -7,3 +7,13 @@ build/*.log
 .env
 
 build/*.iso
+build/*_boot.png
+build/*_desktop.png
+build/*_final.png
+build/*_nodm.png
+build/*_tty_boot.png
+build/iso_inspect/
+build/root_inspect/
+build/test-details.xml
+build/test-notifications.json
+build/system-fluthin-projects/

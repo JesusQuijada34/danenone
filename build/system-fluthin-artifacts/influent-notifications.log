@@ -1,0 +1,83 @@
+[WARN] Leviathan UI no disponible o error de sintaxis: No module named 'leviathan_ui'
+[PackageMaker] Plataforma detectada: danenone
+[PackageMaker] BASE_DIR: /home/ubuntu/Documents/Packagemaker Projects
+[PackageMaker] Fluthin_APPS: /home/ubuntu/Documents/Fluthin Apps
+[INFO] Iniciando compilación del proyecto actual...
+[INFO] Proyecto: /home/ubuntu/danenone/build/system-fluthin-projects/influent-notifications
+[INFO] Salida: /home/ubuntu/Documents/Packagemaker Projects/Compiled
+[INFO] Plataforma objetivo (detectada): Linux
+[FlangCompiler IT] Inicializado en: /home/ubuntu/danenone/build/system-fluthin-projects/influent-notifications
+[FlangCompiler IT] Plataforma actual: Linux
+[INFO] Metadatos cargados: {'publisher': 'Influent', 'app': 'influent-notifications', 'name': 'Influent Notifications', 'version': '0.3-26.08-21.56', 'platform': 'Danenone', 'author': 'JesusQuijada34'}
+[INFO] Secondary script: app.py | Icon: None
+[INFO] PyInstaller embebido: 6.22.0
+--- / --- - WORKING FOR SQUAREROOM - --- / ---
+[INFO] Iniciando compilación para Linux...
+[INFO] Compilando script: app...
+[DEBUG] Compilando app con PyInstaller embebido...
+[OK] app compilado.
+[INFO] Creando paquete en: /home/ubuntu/Documents/Packagemaker Projects/Compiled/Influent.influent-notifications.v0.3-26.08-21.56-Danenone
+[INFO] Creando .iflapp: Influent.influent-notifications.v0.3-26.08-21.56-Danenone.iflapp
+[OK] Compilación completada exitosamente
+[INFO] Paquete generado: /home/ubuntu/Documents/Packagemaker Projects/Compiled/Influent.influent-notifications.v0.3-26.08-21.56-Danenone.iflapp
+[INFO] Carpeta del paquete eliminada: Influent.influent-notifications.v0.3-26.08-21.56-Danenone
+[INFO] Solo queda el archivo .iflapp: Influent.influent-notifications.v0.3-26.08-21.56-Danenone.iflapp
+[INFO] Proyecto fuente conservado; la eliminación requiere autorización explícita.
+[INFO] Limpiando archivos de compilación...
+[INFO] Carpeta eliminada: dist
+
+129 INFO: PyInstaller: 6.22.0, contrib hooks: 2026.6
+129 INFO: Python: 3.12.3
+129 INFO: Platform: Linux-6.1.102-x86_64-with-glibc2.39
+129 INFO: Python environment: /usr
+129 INFO: wrote /tmp/pyi_build_aapwe32v/spec/app.spec
+130 INFO: Module search paths (PYTHONPATH):
+['/home/ubuntu/fluthin_compatible/packagemaker',
+ '/usr/lib/python312.zip',
+ '/usr/lib/python3.12',
+ '/usr/lib/python3.12/lib-dynload',
+ '/home/ubuntu/.local/lib/python3.12/site-packages',
+ '/usr/local/lib/python3.12/dist-packages',
+ '/usr/lib/python3/dist-packages',
+ '/home/ubuntu/danenone/build/system-fluthin-projects/influent-notifications']
+609 INFO: Appending 'datas' from .spec
+609 INFO: checking Analysis
+609 INFO: Building Analysis because Analysis-00.toc is non existent
+609 INFO: Looking for Python shared library...
+616 INFO: Using Python shared library: /lib/x86_64-linux-gnu/libpython3.12.so.1.0
+616 INFO: Running Analysis Analysis-00.toc
+616 INFO: Target bytecode optimization level: 0
+616 INFO: Initializing module dependency graph...
+616 INFO: Initializing module graph hook caches...
+621 INFO: Analyzing modules for base_library.zip ...
+1033 INFO: Processing standard module hook 'hook-encodings.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks'
+1275 INFO: Processing standard module hook 'hook-math.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks'
+1684 INFO: Processing standard module hook 'hook-pickle.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks'
+2259 INFO: Processing standard module hook 'hook-heapq.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks'
+2429 INFO: Caching module dependency graph...
+2449 INFO: Analyzing /home/ubuntu/danenone/build/system-fluthin-projects/influent-notifications/app.py
+2449 INFO: Processing module hooks (post-graph stage)...
+2452 INFO: Performing binary vs. data reclassification (12 entries)
+2454 INFO: Looking for ctypes DLLs
+2456 INFO: Analyzing run-time hooks ...
+2457 INFO: Including run-time hook 'pyi_rth_inspect.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+2459 INFO: Creating base_library.zip...
+2468 INFO: Looking for dynamic libraries
+2538 INFO: Warnings written to /tmp/pyi_build_aapwe32v/work/app/warn-app.txt
+2543 INFO: Graph cross-reference written to /tmp/pyi_build_aapwe32v/work/app/xref-app.html
+2548 INFO: checking PYZ
+2548 INFO: Building PYZ because PYZ-00.toc is non existent
+2548 INFO: Building PYZ (ZlibArchive) /tmp/pyi_build_aapwe32v/work/app/PYZ-00.pyz
+2628 INFO: Building PYZ (ZlibArchive) /tmp/pyi_build_aapwe32v/work/app/PYZ-00.pyz completed successfully.
+2633 INFO: checking PKG
+2633 INFO: Building PKG because PKG-00.toc is non existent
+2633 INFO: Building PKG (CArchive) app.pkg
+4507 INFO: Building PKG (CArchive) app.pkg completed successfully.
+4507 INFO: Bootloader /home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/bootloader/Linux-64bit-intel/run
+4507 INFO: checking EXE
+4507 INFO: Building EXE because EXE-00.toc is non existent
+4507 INFO: Building EXE from EXE-00.toc
+4507 INFO: Copying bootloader EXE to /home/ubuntu/danenone/build/system-fluthin-projects/influent-notifications/dist/app
+4508 INFO: Appending PKG archive to custom ELF section in EXE
+4520 INFO: Building EXE from EXE-00.toc completed successfully.
+4521 INFO: Build complete! The results are available in: /home/ubuntu/danenone/build/system-fluthin-projects/influent-notifications/dist

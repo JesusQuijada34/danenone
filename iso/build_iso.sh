@@ -28,7 +28,7 @@ lb config \
 sed -i 's/^LB_KEYRING_PACKAGES=.*/LB_KEYRING_PACKAGES="debian-archive-keyring"/' config/chroot
 sed -i 's/^LB_LINUX_FLAVOURS=.*/LB_LINUX_FLAVOURS="amd64"/' config/chroot
 sed -i 's/^LB_LINUX_PACKAGES=.*/LB_LINUX_PACKAGES="linux-image"/' config/chroot
-mkdir -p config/package-lists config/includes.chroot/opt/influent-danenone config/includes.chroot/usr/local/bin config/includes.chroot/etc/X11 config/includes.chroot/etc/default config/includes.chroot/etc/systemd/system config/includes.binary/boot/grub config/hooks/normal config/hooks
+mkdir -p config/package-lists config/includes.chroot/opt/influent-danenone config/includes.chroot/opt/influent-danenone/branding config/includes.chroot/etc/calamares/branding/influent config/includes.chroot/etc/calamares/modules config/includes.chroot/usr/lib/influent/packages config/includes.chroot/var/lib/influent config/includes.chroot/usr/local/bin config/includes.chroot/etc/X11 config/includes.chroot/etc/default config/includes.chroot/etc/systemd/system config/includes.binary/boot/grub config/hooks/normal config/hooks
 cat > config/package-lists/influent-danenone.list.chroot <<'EOF'
 linux-image-amd64
 live-boot
@@ -37,6 +37,7 @@ python3
 python3-pyqt5
 python3-requests
 network-manager
+calamares
 xorg
 xinit
 x11-xserver-utils
@@ -44,14 +45,32 @@ dbus-x11
 nodm
 sudo
 syslinux-utils
+unzip
 EOF
 cp -a "$ROOT/src" "$ROOT/pyproject.toml" "$ROOT/README.md" config/includes.chroot/opt/influent-danenone/
+cp -a "$ROOT/branding/influent-stream-wallpaper.png" config/includes.chroot/opt/influent-danenone/branding/
+cp -a "$ROOT/installer/calamares/branding/influent/." config/includes.chroot/etc/calamares/branding/influent/
+cp "$ROOT/installer/calamares/settings.conf" config/includes.chroot/etc/calamares/settings.conf
+SYSTEM_ARTIFACTS="$ROOT/build/system-fluthin-artifacts"
+for package in "$SYSTEM_ARTIFACTS"/*.iflapp; do
+  [ -f "$package" ] || continue
+  package_name=$(basename "$package" .iflapp)
+  mkdir -p "config/includes.chroot/usr/lib/influent/packages/$package_name"
+  unzip -q "$package" -d "config/includes.chroot/usr/lib/influent/packages/$package_name"
+ done
+cat > config/includes.chroot/var/lib/influent/installed-packages.json <<'EOF'
+[
+  {"package": "/usr/lib/influent/packages/Influent.danenone-shell.v0.3-26.08-21.56-Danenone", "details_xml": "/usr/lib/influent/packages/Influent.danenone-shell.v0.3-26.08-21.56-Danenone/details.xml"},
+  {"package": "/usr/lib/influent/packages/Influent.influent-updater.v0.3-26.08-21.56-Danenone", "details_xml": "/usr/lib/influent/packages/Influent.influent-updater.v0.3-26.08-21.56-Danenone/details.xml"},
+  {"package": "/usr/lib/influent/packages/Influent.influent-notifications.v0.3-26.08-21.56-Danenone", "details_xml": "/usr/lib/influent/packages/Influent.influent-notifications.v0.3-26.08-21.56-Danenone/details.xml"}
+]
+EOF
 cp "$ROOT/build/influent-boot.xpm.gz" config/includes.binary/boot/grub/influent-boot.xpm.gz
 cat > config/includes.chroot/usr/local/bin/influent-danenone-session <<'EOF'
 #!/bin/sh
 export PYTHONPATH=/opt/influent-danenone/src
 export QT_QPA_PLATFORM=${QT_QPA_PLATFORM:-xcb}
-exec python3 -m danenone_shell.app
+exec /usr/lib/influent/packages/Influent.danenone-shell.v0.3-26.08-21.56-Danenone/app/app
 EOF
 chmod +x config/includes.chroot/usr/local/bin/influent-danenone-session
 cat > config/includes.chroot/etc/X11/Xwrapper.config <<'EOF'
@@ -76,6 +95,7 @@ Type=simple
 User=influent
 Environment=HOME=/home/influent
 Environment=PYTHONPATH=/opt/influent-danenone/src
+Environment=INFLUENT_PACKAGE_ROOT=/usr/lib/influent/packages
 Environment=QT_QPA_PLATFORM=xcb
 ExecStart=/usr/bin/startx /usr/local/bin/influent-danenone-session -- :0 vt1 -keeptty -nolisten tcp
 Restart=on-failure
@@ -123,3 +143,6 @@ lb build
 mkdir -p "$ROOT/build"
 cp binary.iso "$ROOT/build/influent-danenone-0.2.0-preview-amd64.iso"
 sha256sum "$ROOT/build/influent-danenone-0.2.0-preview-amd64.iso" > "$ROOT/build/influent-danenone-0.2.0-preview-amd64.iso.sha256"
+if [ -n "${SUDO_USER:-}" ]; then
+  chown "$SUDO_USER:${SUDO_USER}" "$ROOT/build/influent-danenone-0.2.0-preview-amd64.iso" "$ROOT/build/influent-danenone-0.2.0-preview-amd64.iso.sha256" || true
+fi

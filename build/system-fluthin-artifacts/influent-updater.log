@@ -1,0 +1,83 @@
+[WARN] Leviathan UI no disponible o error de sintaxis: No module named 'leviathan_ui'
+[PackageMaker] Plataforma detectada: danenone
+[PackageMaker] BASE_DIR: /home/ubuntu/Documents/Packagemaker Projects
+[PackageMaker] Fluthin_APPS: /home/ubuntu/Documents/Fluthin Apps
+[INFO] Iniciando compilación del proyecto actual...
+[INFO] Proyecto: /home/ubuntu/danenone/build/system-fluthin-projects/influent-updater
+[INFO] Salida: /home/ubuntu/Documents/Packagemaker Projects/Compiled
+[INFO] Plataforma objetivo (detectada): Linux
+[FlangCompiler IT] Inicializado en: /home/ubuntu/danenone/build/system-fluthin-projects/influent-updater
+[FlangCompiler IT] Plataforma actual: Linux
+[INFO] Metadatos cargados: {'publisher': 'Influent', 'app': 'influent-updater', 'name': 'Influent Updater', 'version': '0.3-26.08-21.56', 'platform': 'Danenone', 'author': 'JesusQuijada34'}
+[INFO] Secondary script: app.py | Icon: None
+[INFO] PyInstaller embebido: 6.22.0
+--- / --- - WORKING FOR SQUAREROOM - --- / ---
+[INFO] Iniciando compilación para Linux...
+[INFO] Compilando script: app...
+[DEBUG] Compilando app con PyInstaller embebido...
+[OK] app compilado.
+[INFO] Creando paquete en: /home/ubuntu/Documents/Packagemaker Projects/Compiled/Influent.influent-updater.v0.3-26.08-21.56-Danenone
+[INFO] Creando .iflapp: Influent.influent-updater.v0.3-26.08-21.56-Danenone.iflapp
+[OK] Compilación completada exitosamente
+[INFO] Paquete generado: /home/ubuntu/Documents/Packagemaker Projects/Compiled/Influent.influent-updater.v0.3-26.08-21.56-Danenone.iflapp
+[INFO] Carpeta del paquete eliminada: Influent.influent-updater.v0.3-26.08-21.56-Danenone
+[INFO] Solo queda el archivo .iflapp: Influent.influent-updater.v0.3-26.08-21.56-Danenone.iflapp
+[INFO] Proyecto fuente conservado; la eliminación requiere autorización explícita.
+[INFO] Limpiando archivos de compilación...
+[INFO] Carpeta eliminada: dist
+
+131 INFO: PyInstaller: 6.22.0, contrib hooks: 2026.6
+131 INFO: Python: 3.12.3
+131 INFO: Platform: Linux-6.1.102-x86_64-with-glibc2.39
+131 INFO: Python environment: /usr
+131 INFO: wrote /tmp/pyi_build_4b9b_8sv/spec/app.spec
+132 INFO: Module search paths (PYTHONPATH):
+['/home/ubuntu/fluthin_compatible/packagemaker',
+ '/usr/lib/python312.zip',
+ '/usr/lib/python3.12',
+ '/usr/lib/python3.12/lib-dynload',
+ '/home/ubuntu/.local/lib/python3.12/site-packages',
+ '/usr/local/lib/python3.12/dist-packages',
+ '/usr/lib/python3/dist-packages',
+ '/home/ubuntu/danenone/build/system-fluthin-projects/influent-updater']
+597 INFO: Appending 'datas' from .spec
+598 INFO: checking Analysis
+598 INFO: Building Analysis because Analysis-00.toc is non existent
+598 INFO: Looking for Python shared library...
+604 INFO: Using Python shared library: /lib/x86_64-linux-gnu/libpython3.12.so.1.0
+604 INFO: Running Analysis Analysis-00.toc
+604 INFO: Target bytecode optimization level: 0
+604 INFO: Initializing module dependency graph...
+604 INFO: Initializing module graph hook caches...
+608 INFO: Analyzing modules for base_library.zip ...
+876 INFO: Processing standard module hook 'hook-encodings.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks'
+1221 INFO: Processing standard module hook 'hook-math.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks'
+1796 INFO: Processing standard module hook 'hook-pickle.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks'
+2263 INFO: Processing standard module hook 'hook-heapq.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks'
+2485 INFO: Caching module dependency graph...
+2506 INFO: Analyzing /home/ubuntu/danenone/build/system-fluthin-projects/influent-updater/app.py
+2506 INFO: Processing module hooks (post-graph stage)...
+2509 INFO: Performing binary vs. data reclassification (12 entries)
+2511 INFO: Looking for ctypes DLLs
+2513 INFO: Analyzing run-time hooks ...
+2513 INFO: Including run-time hook 'pyi_rth_inspect.py' from '/home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/hooks/rthooks'
+2516 INFO: Creating base_library.zip...
+2525 INFO: Looking for dynamic libraries
+2587 INFO: Warnings written to /tmp/pyi_build_4b9b_8sv/work/app/warn-app.txt
+2592 INFO: Graph cross-reference written to /tmp/pyi_build_4b9b_8sv/work/app/xref-app.html
+2599 INFO: checking PYZ
+2599 INFO: Building PYZ because PYZ-00.toc is non existent
+2599 INFO: Building PYZ (ZlibArchive) /tmp/pyi_build_4b9b_8sv/work/app/PYZ-00.pyz
+2685 INFO: Building PYZ (ZlibArchive) /tmp/pyi_build_4b9b_8sv/work/app/PYZ-00.pyz completed successfully.
+2691 INFO: checking PKG
+2691 INFO: Building PKG because PKG-00.toc is non existent
+2691 INFO: Building PKG (CArchive) app.pkg
+4546 INFO: Building PKG (CArchive) app.pkg completed successfully.
+4546 INFO: Bootloader /home/ubuntu/.local/lib/python3.12/site-packages/PyInstaller/bootloader/Linux-64bit-intel/run
+4547 INFO: checking EXE
+4547 INFO: Building EXE because EXE-00.toc is non existent
+4547 INFO: Building EXE from EXE-00.toc
+4547 INFO: Copying bootloader EXE to /home/ubuntu/danenone/build/system-fluthin-projects/influent-updater/dist/app
+4547 INFO: Appending PKG archive to custom ELF section in EXE
+4560 INFO: Building EXE from EXE-00.toc completed successfully.
+4560 INFO: Build complete! The results are available in: /home/ubuntu/danenone/build/system-fluthin-projects/influent-updater/dist

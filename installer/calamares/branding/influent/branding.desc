@@ -1,0 +1,27 @@
+---
+ componentName: Influent Danenone
+ welcomeStyle: true
+ strings:
+   productName: Influent Danenone
+   shortProductName: Influent
+   version: 0.3.0-preview
+   shortVersion: 0.3
+   versionedName: Influent Danenone 0.3
+   productUrl: https://github.com/JesusQuijada34/danenone
+   shortProductUrl: github.com/JesusQuijada34/danenone
+   bootloaderEntryName: Influent Danenone
+   welcomeMessage: Instala Influent Danenone en tu equipo
+   welcomeDescription: Un escritorio familiar, fluido y personalizable para quienes vienen de Windows y deepin.
+ images:
+   productLogo: logo.svg
+   productIcon: logo.svg
+ style:
+   SidebarBackground: "#111A2D"
+   SidebarText: "#F4F7FF"
+   SidebarTextHighlight: "#78A9FF"
+   SidebarBackgroundHighlight: "#263A63"
+   ContentBackground: "#0B1220"
+   WelcomeBackground: "#0B1220"
+   ButtonBackground: "#78A9FF"
+   ButtonText: "#081020"
+   Font: "DejaVu Sans"

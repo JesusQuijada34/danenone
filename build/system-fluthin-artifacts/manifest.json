@@ -1,0 +1,17 @@
+[
+  {
+    "app": "danenone-shell",
+    "project": "/home/ubuntu/danenone/build/system-fluthin-projects/danenone-shell",
+    "artifact": "/home/ubuntu/danenone/build/system-fluthin-artifacts/Influent.danenone-shell.v0.3-26.08-21.56-Danenone.iflapp"
+  },
+  {
+    "app": "influent-updater",
+    "project": "/home/ubuntu/danenone/build/system-fluthin-projects/influent-updater",
+    "artifact": "/home/ubuntu/danenone/build/system-fluthin-artifacts/Influent.influent-updater.v0.3-26.08-21.56-Danenone.iflapp"
+  },
+  {
+    "app": "influent-notifications",
+    "project": "/home/ubuntu/danenone/build/system-fluthin-projects/influent-notifications",
+    "artifact": "/home/ubuntu/danenone/build/system-fluthin-artifacts/Influent.influent-notifications.v0.3-26.08-21.56-Danenone.iflapp"
+  }
+]
