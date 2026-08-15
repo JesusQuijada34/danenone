@@ -17,6 +17,7 @@ hyprpaper
 foot
 networkmanager
 network-manager-applet
+curl
 pipewire
 wireplumber
 xdg-desktop-portal-hyprland

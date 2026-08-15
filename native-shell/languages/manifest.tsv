@@ -1,0 +1,7 @@
+# code|label|url|sha256|package
+# English is built into the base image and does not require a download.
+en|English|builtin||
+# Add verified HTTPS release assets for other languages before enabling them in a production ISO.
+# es|Español|https://github.com/JesusQuijada34/danenone/releases/download/language-packs/influent-language-es_0.1.0_all.deb|REPLACE_WITH_SHA256|influent-language-es_0.1.0_all.deb
+# fr|Français|https://github.com/JesusQuijada34/danenone/releases/download/language-packs/influent-language-fr_0.1.0_all.deb|REPLACE_WITH_SHA256|influent-language-fr_0.1.0_all.deb
+# de|Deutsch|https://github.com/JesusQuijada34/danenone/releases/download/language-packs/influent-language-de_0.1.0_all.deb|REPLACE_WITH_SHA256|influent-language-de_0.1.0_all.deb

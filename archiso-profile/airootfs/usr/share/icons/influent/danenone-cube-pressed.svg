@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Cubito Danenone pressed">
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9fe0"/><stop offset="1" stop-color="#476cb7"/></linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#315895"/><stop offset="1" stop-color="#243b70"/></linearGradient>
+    <linearGradient id="right" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6257b9"/><stop offset="1" stop-color="#403786"/></linearGradient>
+  </defs>
+  <g transform="translate(3 4)" stroke="#d4e8ff" stroke-width="2.4" stroke-linejoin="round">
+    <path fill="url(#top)" d="M12 38 64 10l52 28-52 31Z"/>
+    <path fill="url(#left)" d="M12 38v55l52 25V69Z"/>
+    <path fill="url(#right)" d="M64 69v49l52-25V38Z"/>
+  </g>
+  <g fill="#081226"><circle cx="49" cy="55" r="4.2"/><circle cx="83" cy="55" r="4.2"/></g>
+  <path d="M58 65q9-5 18 0" fill="none" stroke="#f7fbff" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

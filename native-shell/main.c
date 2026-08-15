@@ -22,6 +22,71 @@ static GtkWidget *make_button(const char *label, const char *class_name) {
     return button;
 }
 
+static const char *cube_icon_path(const char *state) {
+    static char path[512];
+    g_snprintf(path, sizeof(path), "/usr/share/icons/influent/danenone-cube-%s.svg", state);
+    if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
+        g_snprintf(path, sizeof(path), "assets/danenone-cube/danenone-cube-%s.svg", state);
+    }
+    return path;
+}
+
+static void start_icon_set(GtkWidget *button, const char *state) {
+    GtkWidget *image = g_object_get_data(G_OBJECT(button), "start-image");
+    if (image) gtk_image_set_from_file(GTK_IMAGE(image), cube_icon_path(state));
+}
+
+static gboolean start_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer data) {
+    (void)event; (void)data;
+    start_icon_set(widget, "hover");
+    return FALSE;
+}
+
+static gboolean start_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer data) {
+    (void)event; (void)data;
+    start_icon_set(widget, "normal");
+    return FALSE;
+}
+
+static gboolean start_press(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    (void)data;
+    if (event->button == 1) start_icon_set(widget, "pressed");
+    return FALSE;
+}
+
+static gboolean start_release(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    (void)data;
+    if (event->button == 1) start_icon_set(widget, "hover");
+    return FALSE;
+}
+
+static void start_clicked(GtkButton *button, gpointer data) {
+    (void)button; (void)data;
+    GError *error = NULL;
+    char *argv[] = {"/usr/local/bin/influent-danenone-start", NULL};
+    if (!g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error)) {
+        if (error) g_error_free(error);
+        char *local_argv[] = {"./influent-danenone-start", NULL};
+        g_spawn_async(NULL, local_argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL);
+    }
+}
+
+static GtkWidget *make_start_button(void) {
+    GtkWidget *button = gtk_button_new();
+    GtkWidget *image = gtk_image_new_from_file(cube_icon_path("normal"));
+    gtk_widget_set_size_request(image, 38, 38);
+    g_object_set_data(G_OBJECT(button), "start-image", image);
+    gtk_container_add(GTK_CONTAINER(button), image);
+    gtk_widget_set_name(button, "start-button");
+    gtk_widget_set_tooltip_text(button, "Inicio");
+    g_signal_connect(button, "clicked", G_CALLBACK(start_clicked), NULL);
+    g_signal_connect(button, "enter-notify-event", G_CALLBACK(start_enter), NULL);
+    g_signal_connect(button, "leave-notify-event", G_CALLBACK(start_leave), NULL);
+    g_signal_connect(button, "button-press-event", G_CALLBACK(start_press), NULL);
+    g_signal_connect(button, "button-release-event", G_CALLBACK(start_release), NULL);
+    return button;
+}
+
 static void build_taskbar(void) {
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_layer_init_for_window(GTK_WINDOW(window));
@@ -40,7 +105,7 @@ static void build_taskbar(void) {
     gtk_widget_set_margin_top(bar, 10);
     gtk_widget_set_margin_bottom(bar, 10);
 
-    GtkWidget *start = make_button("◈", "start-button");
+    GtkWidget *start = make_start_button();
     gtk_box_pack_start(GTK_BOX(bar), start, FALSE, FALSE, 0);
     GtkWidget *spacer_left = gtk_label_new(NULL);
     gtk_widget_set_hexpand(spacer_left, TRUE);

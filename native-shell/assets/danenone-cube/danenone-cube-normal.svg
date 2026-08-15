@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Cubito Danenone normal">
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8fc7ff"/><stop offset="1" stop-color="#5d8fe0"/></linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4a7fc9"/><stop offset="1" stop-color="#315493"/></linearGradient>
+    <linearGradient id="right" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8776e8"/><stop offset="1" stop-color="#5146a6"/></linearGradient>
+  </defs>
+  <g stroke="#e8f4ff" stroke-width="2.4" stroke-linejoin="round">
+    <path fill="url(#top)" d="M12 38 64 10l52 28-52 31Z"/>
+    <path fill="url(#left)" d="M12 38v55l52 25V69Z"/>
+    <path fill="url(#right)" d="M64 69v49l52-25V38Z"/>
+  </g>
+  <g fill="#101d33">
+    <circle cx="46" cy="51" r="4.4"/><circle cx="80" cy="51" r="4.4"/>
+  </g>
+  <path d="M55 61q9 7 18 0" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+</svg>
