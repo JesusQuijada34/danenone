@@ -244,9 +244,9 @@ static void activate(GtkApplication *app, gpointer data) {
     gtk_widget_set_margin_bottom(root, 24);
 
     GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
-    GtkWidget *icon = gtk_image_new_from_file("/usr/share/icons/influent/danenone-cube-normal.svg");
+    GtkWidget *icon = gtk_image_new_from_file("/usr/share/influent/danenone-cube-logo.png");
     if (gtk_image_get_storage_type(GTK_IMAGE(icon)) == GTK_IMAGE_EMPTY) icon = gtk_image_new_from_icon_name("applications-system-symbolic", GTK_ICON_SIZE_DIALOG);
-    gtk_widget_set_size_request(icon, 52, 52);
+    gtk_widget_set_size_request(icon, 64, 64);
     gtk_box_pack_start(GTK_BOX(header), icon, FALSE, FALSE, 0);
     GtkWidget *heading_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
     GtkWidget *heading = gtk_label_new("Inicio");

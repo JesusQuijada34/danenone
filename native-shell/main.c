@@ -33,18 +33,19 @@ static GtkWidget *make_icon_button(const char *icon_name, const char *tooltip) {
     return button;
 }
 
-static const char *cube_icon_path(const char *state) {
+static const char *danenone_logo_path(void) {
     static char path[512];
-    g_snprintf(path, sizeof(path), "/usr/share/icons/influent/danenone-cube-%s.svg", state);
+    g_snprintf(path, sizeof(path), "/usr/share/influent/danenone-cube-logo.png");
     if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
-        g_snprintf(path, sizeof(path), "assets/danenone-cube/danenone-cube-%s.svg", state);
+        g_snprintf(path, sizeof(path), "assets/danenone-cube/danenone-cube-logo.png");
     }
     return path;
 }
 
 static void start_icon_set(GtkWidget *button, const char *state) {
+    (void)state;
     GtkWidget *image = g_object_get_data(G_OBJECT(button), "start-image");
-    if (image) gtk_image_set_from_file(GTK_IMAGE(image), cube_icon_path(state));
+    if (image) gtk_image_set_from_file(GTK_IMAGE(image), danenone_logo_path());
 }
 
 static gboolean start_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer data) {
@@ -84,7 +85,7 @@ static void start_clicked(GtkButton *button, gpointer data) {
 
 static GtkWidget *make_start_button(void) {
     GtkWidget *button = gtk_button_new();
-    GtkWidget *image = gtk_image_new_from_file(cube_icon_path("normal"));
+    GtkWidget *image = gtk_image_new_from_file(danenone_logo_path());
     gtk_widget_set_size_request(image, 38, 38);
     g_object_set_data(G_OBJECT(button), "start-image", image);
     gtk_container_add(GTK_CONTAINER(button), image);
