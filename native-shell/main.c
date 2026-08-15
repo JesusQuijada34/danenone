@@ -1,8 +1,15 @@
 #include <gtk/gtk.h>
 #include <gtk-layer-shell/gtk-layer-shell.h>
+#include "window_visuals.h"
 #include <time.h>
 
 static GtkWidget *clock_label;
+
+static gboolean layer_shell_available(void) {
+    GdkDisplay *display = gdk_display_get_default();
+    const char *name = display ? gdk_display_get_name(display) : NULL;
+    return name && g_str_has_prefix(name, "wayland-") && gtk_layer_is_supported();
+}
 
 static gboolean update_clock(gpointer data) {
     GtkWidget *label = GTK_WIDGET(data);
@@ -14,9 +21,13 @@ static gboolean update_clock(gpointer data) {
     return G_SOURCE_CONTINUE;
 }
 
-static GtkWidget *make_button(const char *label, const char *class_name) {
-    GtkWidget *button = gtk_button_new_with_label(label);
-    gtk_widget_set_name(button, class_name);
+static GtkWidget *make_icon_button(const char *icon_name, const char *tooltip) {
+    GtkWidget *button = gtk_button_new();
+    GtkWidget *image = gtk_image_new_from_icon_name(icon_name, GTK_ICON_SIZE_BUTTON);
+    gtk_image_set_pixel_size(GTK_IMAGE(image), 22);
+    gtk_container_add(GTK_CONTAINER(button), image);
+    gtk_widget_set_name(button, "task-icon-button");
+    gtk_widget_set_tooltip_text(button, tooltip);
     gtk_widget_set_hexpand(button, FALSE);
     gtk_widget_set_vexpand(button, TRUE);
     return button;
@@ -89,13 +100,20 @@ static GtkWidget *make_start_button(void) {
 
 static void build_taskbar(void) {
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_layer_init_for_window(GTK_WINDOW(window));
-    gtk_layer_set_namespace(GTK_WINDOW(window), "influent-danenone-taskbar");
-    gtk_layer_set_layer(GTK_WINDOW(window), GTK_LAYER_SHELL_LAYER_TOP);
-    gtk_layer_set_anchor(GTK_WINDOW(window), GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
-    gtk_layer_set_anchor(GTK_WINDOW(window), GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
-    gtk_layer_set_anchor(GTK_WINDOW(window), GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
-    gtk_layer_set_exclusive_zone(GTK_WINDOW(window), 84);
+    gboolean use_layer_shell = layer_shell_available();
+    if (use_layer_shell) {
+        gtk_layer_init_for_window(GTK_WINDOW(window));
+        gtk_layer_set_namespace(GTK_WINDOW(window), "influent-danenone-taskbar");
+        gtk_layer_set_layer(GTK_WINDOW(window), GTK_LAYER_SHELL_LAYER_TOP);
+        gtk_layer_set_anchor(GTK_WINDOW(window), GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
+        gtk_layer_set_anchor(GTK_WINDOW(window), GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
+        gtk_layer_set_anchor(GTK_WINDOW(window), GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
+        gtk_layer_set_exclusive_zone(GTK_WINDOW(window), 84);
+    } else {
+        gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+        gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
+        gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+    }
     gtk_window_set_default_size(GTK_WINDOW(window), 900, 72);
 
     GtkWidget *bar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
@@ -110,9 +128,10 @@ static void build_taskbar(void) {
     GtkWidget *spacer_left = gtk_label_new(NULL);
     gtk_widget_set_hexpand(spacer_left, TRUE);
     gtk_box_pack_start(GTK_BOX(bar), spacer_left, TRUE, TRUE, 0);
-    const char *items[] = {"◈", "▣", "◌"};
-    for (size_t index = 0; index < G_N_ELEMENTS(items); ++index) {
-        GtkWidget *button = make_button(items[index], "task-button");
+    const char *icons[] = {"view-grid-symbolic", "folder-symbolic", "notifications-symbolic"};
+    const char *tooltips[] = {"Aplicaciones", "Archivos", "Notificaciones"};
+    for (size_t index = 0; index < G_N_ELEMENTS(icons); ++index) {
+        GtkWidget *button = make_icon_button(icons[index], tooltips[index]);
         gtk_box_pack_start(GTK_BOX(bar), button, FALSE, FALSE, 0);
     }
     GtkWidget *spacer_right = gtk_label_new(NULL);
@@ -121,7 +140,7 @@ static void build_taskbar(void) {
     clock_label = gtk_label_new(NULL);
     gtk_widget_set_name(clock_label, "clock");
     gtk_box_pack_start(GTK_BOX(bar), clock_label, FALSE, FALSE, 8);
-    GtkWidget *control = make_button("☰", "task-button");
+    GtkWidget *control = make_icon_button("open-menu-symbolic", "Centro de Control");
     gtk_box_pack_start(GTK_BOX(bar), control, FALSE, FALSE, 0);
 
     gtk_container_add(GTK_CONTAINER(window), bar);
@@ -132,10 +151,17 @@ static void build_taskbar(void) {
 
 static void build_notch(void) {
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_layer_init_for_window(GTK_WINDOW(window));
-    gtk_layer_set_namespace(GTK_WINDOW(window), "influent-danenone-notch");
-    gtk_layer_set_layer(GTK_WINDOW(window), GTK_LAYER_SHELL_LAYER_TOP);
-    gtk_layer_set_anchor(GTK_WINDOW(window), GTK_LAYER_SHELL_EDGE_TOP, TRUE);
+    gboolean use_layer_shell = layer_shell_available();
+    if (use_layer_shell) {
+        gtk_layer_init_for_window(GTK_WINDOW(window));
+        gtk_layer_set_namespace(GTK_WINDOW(window), "influent-danenone-notch");
+        gtk_layer_set_layer(GTK_WINDOW(window), GTK_LAYER_SHELL_LAYER_TOP);
+        gtk_layer_set_anchor(GTK_WINDOW(window), GTK_LAYER_SHELL_EDGE_TOP, TRUE);
+    } else {
+        gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+        gtk_window_set_keep_above(GTK_WINDOW(window), TRUE);
+        gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+    }
     gtk_window_set_default_size(GTK_WINDOW(window), 270, 46);
     GtkWidget *notch = gtk_label_new("Influent Danenone");
     gtk_widget_set_name(notch, "notch");
@@ -146,6 +172,7 @@ static void build_notch(void) {
 static void activate(GtkApplication *app, gpointer data) {
     (void)app;
     (void)data;
+    danenone_window_visuals_install(DANENONE_THEME_DARK);
     GtkCssProvider *css = gtk_css_provider_new();
     gtk_css_provider_load_from_data(css,
         "#taskbar { background: rgba(12, 22, 38, 0.90); border: 1px solid rgba(220,235,255,0.25); border-radius: 26px; }"
@@ -153,6 +180,9 @@ static void activate(GtkApplication *app, gpointer data) {
         "button { color: #eef5ff; background: rgba(35,58,88,0.75); border: 1px solid rgba(220,235,255,0.2); border-radius: 14px; padding: 8px 14px; }"
         "button:hover { background: rgba(79,132,196,0.9); }"
         "#start-button { background: rgba(93,143,221,0.95); font-size: 20px; }"
+        "#task-icon-button { min-width: 42px; padding: 6px; }"
+        "#task-icon-button image { color: #dcecff; }"
+        "#task-icon-button:hover image { color: #ffffff; }"
         "#clock { font-weight: 600; padding: 0 8px; }", -1, NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     build_taskbar();
