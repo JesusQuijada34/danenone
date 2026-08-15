@@ -61,8 +61,33 @@ static void open_network_editor(GtkButton *button, gpointer data) {
     }
 }
 
+static void populate_languages(SetupState *state) {
+    gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(state->language));
+    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(state->language), "en", "English (integrado)");
+
+    gchar *contents = NULL;
+    if (g_file_get_contents(MANIFEST_PATH, &contents, NULL, NULL)) {
+        gchar **lines = g_strsplit(contents, "\n", -1);
+        for (gchar **line = lines; *line; line++) {
+            if ((*line)[0] == '#' || !**line) continue;
+            gchar **parts = g_strsplit(*line, "|", 5);
+            if (parts[0] && parts[1] && parts[2] && parts[4] && g_strcmp0(parts[0], "en") != 0) {
+                const char *availability = g_strcmp0(parts[2], "builtin") == 0 ? "integrado" : "descarga verificada";
+                gchar *label = g_strdup_printf("%s (%s)", parts[4], availability);
+                gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(state->language), parts[0], label);
+                g_free(label);
+            }
+            g_strfreev(parts);
+        }
+        g_strfreev(lines);
+    }
+    g_free(contents);
+    gtk_combo_box_set_active_id(GTK_COMBO_BOX(state->language), "en");
+}
+
 static void enter_language_stage(SetupState *state) {
     state->stage = STAGE_LANGUAGE;
+    populate_languages(state);
     gtk_widget_set_visible(state->network_button, FALSE);
     gtk_widget_set_sensitive(state->language, TRUE);
     gtk_widget_set_visible(state->language, TRUE);
@@ -101,7 +126,7 @@ static gboolean find_language(const char *code, gchar **url, gchar **sha256, gch
     gboolean found = FALSE;
     for (gchar **line = lines; *line; line++) {
         if ((*line)[0] == '#' || !**line) continue;
-        gchar **parts = g_strsplit(*line, "|", 4);
+        gchar **parts = g_strsplit(*line, "|", 5);
         if (parts[0] && g_strcmp0(parts[0], code) == 0 && parts[1] && parts[2] && parts[3]) {
             *url = g_strdup(parts[2]);
             *sha256 = g_strdup(parts[3]);
@@ -222,11 +247,6 @@ static void activate(GtkApplication *app, gpointer data) {
     gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
     gtk_box_pack_start(GTK_BOX(root), description, FALSE, FALSE, 0);
     state->language = gtk_combo_box_text_new();
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(state->language), "en", "English (integrado)");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(state->language), "es", "Español (descarga verificada)");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(state->language), "fr", "Français (descarga verificada)");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(state->language), "de", "Deutsch (descarga verificada)");
-    gtk_combo_box_set_active_id(GTK_COMBO_BOX(state->language), "en");
     gtk_widget_set_visible(state->language, FALSE);
     gtk_box_pack_start(GTK_BOX(root), state->language, FALSE, FALSE, 0);
     state->status = gtk_label_new("Estado: comprobando cuando pulses Continuar.");
