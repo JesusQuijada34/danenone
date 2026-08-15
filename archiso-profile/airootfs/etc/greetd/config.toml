@@ -1,0 +1,6 @@
+[terminal]
+vt = 1
+
+[default_session]
+user = "danenone"
+command = "dbus-run-session Hyprland --config /home/danenone/.config/hypr/hyprland.conf"
