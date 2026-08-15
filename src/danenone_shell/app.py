@@ -9,6 +9,12 @@ from pathlib import Path
 from .hardware_status import HardwareStatus, read_hardware_status
 from .icon_factory import svg_icon
 from .notification_panel import NotificationPanel
+from .freedesktop_notifications import DesktopNotification, FreedesktopNotificationBridge
+from .file_manager import FileManager
+from .window_manager import WindowManager
+from src.core.logging_setup import setup_logging
+
+logger = setup_logging("danenone.shell")
 
 try:
     from PyQt5.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer, pyqtSignal, QSize
@@ -104,6 +110,33 @@ class Notch(QWidget):
         painter.drawArc(30, 22, 182, 30, 205 * 16, 130 * 16)
 
 
+class NotificationBanner(GlassPanel):
+    def __init__(self, parent=None):
+        super().__init__(parent, "NotificationBanner")
+        self.setFixedSize(420, 86)
+        self.title = QLabel()
+        self.title.setObjectName("NotificationTitle")
+        self.body = QLabel()
+        self.body.setObjectName("Muted")
+        self.body.setWordWrap(True)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 12, 18, 12)
+        layout.addWidget(self.title)
+        layout.addWidget(self.body)
+        self.hide()
+        self.timer = QTimer(self)
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.hide)
+
+    def show_notification(self, item: DesktopNotification):
+        self.title.setText(f"{item.app_name}: {item.summary}")
+        self.body.setText(item.body)
+        self.adjustSize()
+        self.show()
+        self.raise_()
+        self.timer.start(max(1000, item.expire_timeout))
+
+
 class AppIcon(QPushButton):
     removed = pyqtSignal(object)
 
@@ -194,7 +227,7 @@ class DesktopPage(QWidget):
 class ControlCenter(GlassPanel):
     def __init__(self, parent=None):
         super().__init__(parent, "ControlCenter")
-        self.setFixedSize(360, 470)
+        self.setFixedSize(390, 470)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(22, 22, 22, 22)
         heading = QLabel("Centro de control")
@@ -235,13 +268,14 @@ class ControlCenter(GlassPanel):
         status: HardwareStatus = read_hardware_status()
         for key, (button, label) in self.cards.items():
             value = getattr(status, key)
-            button.setText(f"{label}\\n{value}")
+            button.setText(f"{label}: {value}")
         for key, (line, label) in self.info.items():
             line.setText(f"{label}:  {getattr(status, key)}")
 
 
 class Taskbar(GlassPanel):
     control_requested = pyqtSignal()
+    files_requested = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent, "Taskbar")
@@ -269,6 +303,8 @@ class Taskbar(GlassPanel):
             button.setToolTip(tip)
             if icon_name == "installer":
                 button.clicked.connect(self.launch_installer)
+            elif icon_name == "files":
+                button.clicked.connect(self.files_requested)
             layout.addWidget(button)
         layout.addStretch()
         controls = QPushButton()
@@ -311,12 +347,19 @@ class InfluentWindow(QWidget):
         root.addWidget(self.dots)
         self.taskbar = Taskbar(self)
         self.taskbar.control_requested.connect(self.toggle_control)
+        self.taskbar.files_requested.connect(self.open_file_manager)
+        self.window_manager = WindowManager(self)
+        self.file_manager = None
         root.addWidget(self.taskbar)
         self.pages.currentChanged.connect(self.update_dots)
         self.control = ControlCenter(self)
         self.control.hide()
         self.notifications_panel = NotificationPanel(self)
         self.notifications_panel.hide()
+        self.notification_banner = NotificationBanner(self)
+        self.bridge = FreedesktopNotificationBridge(on_notification=self.handle_desktop_notification)
+        self.bridge.start()
+        logger.info("Shell Influent Danenone iniciado")
         self.notch = Notch(self)
         self.notch.raise_()
         self.apply_theme()
@@ -331,8 +374,12 @@ class InfluentWindow(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.notch.move((self.width() - self.notch.width()) // 2, 0)
+        if self.file_manager is not None and self.file_manager.isVisible():
+            screen = self.screen().availableGeometry() if self.screen() else self.geometry()
+            self.window_manager.apply_fullscreen_policy(self.file_manager, screen, fullscreen=False)
         self.control.move(self.width() - self.control.width() - 24, self.status.height() + 20)
         self.notifications_panel.move((self.width() - self.notifications_panel.width()) // 2, self.status.height() + 8)
+        self.notification_banner.move((self.width() - self.notification_banner.width()) // 2, self.notch.height() + 8)
 
     def update_dots(self, index):
         self.dots.setText(f"Página {index + 1} de {self.pages.count()}")
@@ -342,6 +389,14 @@ class InfluentWindow(QWidget):
         self.setProperty("editing", self.editing)
         self.style().unpolish(self)
         self.style().polish(self)
+
+    def open_file_manager(self):
+        if self.file_manager is None:
+            self.file_manager = FileManager(parent=self)
+            self.window_manager.register(self.file_manager)
+        self.file_manager.show()
+        self.file_manager.raise_()
+        self.file_manager.activateWindow()
 
     def toggle_control(self):
         self.control.setVisible(not self.control.isVisible())
@@ -353,6 +408,17 @@ class InfluentWindow(QWidget):
         if self.notifications_panel.isVisible():
             self.notifications_panel.refresh()
             self.notifications_panel.raise_()
+
+    def handle_desktop_notification(self, item: DesktopNotification):
+        logger.info("Notificación recibida desde Freedesktop: %s", item.app_name)
+        self.notification_banner.show_notification(item)
+        self.status.notifications.setIcon(svg_icon("notification", accent="#A77BFF"))
+        self.notifications_panel.refresh()
+
+    def closeEvent(self, event):
+        logger.info("Cerrando shell Influent Danenone")
+        self.bridge.stop()
+        super().closeEvent(event)
 
     def apply_theme(self):
         self.setStyleSheet("""
@@ -374,7 +440,7 @@ class InfluentWindow(QWidget):
         #PageDots { background: rgba(10,18,30,0.35); color: rgba(255,255,255,0.82); padding: 3px; }
         #PanelHeading { font-size: 22px; font-weight: 700; }
         #HardwareLine { color: rgba(255,255,255,0.90); background: rgba(255,255,255,0.08); border-radius: 10px; padding: 8px 10px; }
-        #NotificationPanel { background: rgba(21, 29, 48, 0.94); border: 1px solid rgba(255,255,255,0.24); border-radius: 22px; }
+        #NotificationPanel, #NotificationBanner { background: rgba(21, 29, 48, 0.94); border: 1px solid rgba(255,255,255,0.24); border-radius: 22px; }
         #NotificationCard { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; }
         #NotificationSource, #NotificationTitle { color: white; font-weight: 600; }
         QSlider::groove:horizontal { background: rgba(255,255,255,0.25); height: 5px; border-radius: 3px; }
