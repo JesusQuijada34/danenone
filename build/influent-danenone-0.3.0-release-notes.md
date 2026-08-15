@@ -6,13 +6,13 @@ La imagen fue construida con el perfil reproducible de `archiso` a partir de una
 
 | Archivo | Tamaño / valor |
 |---|---:|
-| `influent-danenone-0.3.0-x86_64.iso` | 742,731,776 bytes |
-| MD5 | `be98f63c8d4630387c8257c118c15b34` |
-| SHA-256 | `c3996b5f8d2d36f1f1f6368f0a4fbdc35b27035adad1987bf397c61238ddc374` |
+| `influent-danenone-0.3.0-x86_64.iso` | 722,808,832 bytes |
+| MD5 | `14cbc8c1ad3bf606afa93c3167cedd49` |
+| SHA-256 | `722ec141c7f13a5d459fc5723b46ef4271897462dc9e44e7583d33f45f41767a` |
 
 ## Interfaz
 
-La rama estable usa el shell nativo compilado en C con GTK3 y GTK Layer Shell. La barra inferior se ancla como capa Wayland y utiliza reglas de blur de Hyprland. El notch se conserva como una capa superior separada, dejando el área superior reservada visualmente. El wallpaper predeterminado es `danenone-river-wallpaper.jpg`.
+La rama estable usa el shell nativo compilado en C con GTK3 y GTK Layer Shell. El perfil final no incluye `cloud-init` ni un paquete Python directo en la lista de la imagen; el runtime gráfico es nativo C/GTK/Wayland. La barra inferior se ancla como capa Wayland y utiliza reglas de blur de Hyprland. El notch se conserva como una capa superior separada, dejando el área superior reservada visualmente. El wallpaper predeterminado es `danenone-river-wallpaper.jpg`.
 
 El tour nativo se instala como `/usr/local/bin/influent-danenone-tour`. La sesión se inicia mediante greetd con `dbus-run-session Hyprland` y el archivo de configuración del usuario en `/home/danenone/.config/hypr/hyprland.conf`.
 
