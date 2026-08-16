@@ -49,8 +49,10 @@ typedef struct {
     guint apply_timer;
     guint intro_timer;
     guint finish_timer;
+    guint demo_timer;
     guint cube_state;
     gdouble intro_opacity;
+    gboolean demo_mode;
 } SetupState;
 
 static gchar *setup_marker_path(void) {
@@ -146,6 +148,8 @@ static gboolean intro_step(gpointer data) {
     return G_SOURCE_CONTINUE;
 }
 
+static gboolean demo_step(gpointer data);
+
 static gboolean finish_timeout(gpointer data) {
     SetupState *state = data;
     state->finish_timer = 0;
@@ -167,6 +171,7 @@ static void cleanup_state(GtkWidget *window, gpointer data) {
     if (state->apply_timer) g_source_remove(state->apply_timer);
     if (state->intro_timer) g_source_remove(state->intro_timer);
     if (state->finish_timer) g_source_remove(state->finish_timer);
+    if (state->demo_timer) g_source_remove(state->demo_timer);
     g_free(state);
 }
 
@@ -408,6 +413,35 @@ static void set_stage(SetupState *state, SetupStage stage) {
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(state->progress), fraction);
 }
 
+static gboolean demo_step(gpointer data) {
+    SetupState *state = data;
+    state->demo_timer = 0;
+    if (!state->demo_mode) return G_SOURCE_REMOVE;
+    if (state->stage == STAGE_WELCOME) {
+        g_print("Danenone demo: aceptando bienvenida\n");
+        set_stage(state, STAGE_WIFI);
+    } else if (state->stage == STAGE_WIFI) {
+        if (!wifi_connected()) {
+            set_status(state, "Modo demostración detenido: conecta Wi-Fi para continuar. No se aplicaron cambios.");
+            g_print("Danenone demo: Wi-Fi no disponible; demostración detenida\n");
+            return G_SOURCE_REMOVE;
+        }
+        g_print("Danenone demo: conectividad confirmada\n");
+        set_stage(state, STAGE_LANGUAGE);
+    } else if (state->stage == STAGE_LANGUAGE) {
+        gtk_combo_box_set_active_id(GTK_COMBO_BOX(state->language), "en");
+        g_print("Danenone demo: idioma integrado English\n");
+        set_stage(state, STAGE_REGION);
+    } else if (state->stage == STAGE_REGION) {
+        g_print("Danenone demo: región y teclado predeterminados\n");
+        set_stage(state, STAGE_PRIVACY);
+        set_status(state, "Modo demostración detenido antes de crear el usuario o aplicar cambios.");
+        return G_SOURCE_REMOVE;
+    }
+    state->demo_timer = g_timeout_add_seconds(2, demo_step, state);
+    return G_SOURCE_REMOVE;
+}
+
 static void back_clicked(GtkButton *button, gpointer data) {
     (void)button;
     SetupState *state = data;
@@ -446,6 +480,7 @@ static GtkWidget *make_card_label(const char *text) {
     GtkWidget *label = gtk_label_new(text);
     gtk_label_set_xalign(GTK_LABEL(label), 0.0);
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+    gtk_widget_set_size_request(label, 410, -1);
     gtk_widget_set_name(label, "oobe-card-label");
     return label;
 }
@@ -471,7 +506,13 @@ static void add_combo_row(GtkWidget *box, const char *label_text, GtkWidget *com
 static GtkWidget *make_page(SetupState *state, const char *name, const char *body) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 14);
     gtk_widget_set_name(box, "oobe-page");
-    gtk_container_set_border_width(GTK_CONTAINER(box), 26);
+    gtk_widget_set_size_request(box, 450, -1);
+    gtk_widget_set_halign(box, GTK_ALIGN_CENTER);
+    gtk_widget_set_margin_start(box, 50);
+    gtk_widget_set_margin_end(box, 50);
+    gtk_widget_set_hexpand(box, FALSE);
+    gtk_widget_set_vexpand(box, FALSE);
+    gtk_container_set_border_width(GTK_CONTAINER(box), 18);
     gtk_box_pack_start(GTK_BOX(box), make_card_label(body), FALSE, FALSE, 0);
     gtk_stack_add_named(GTK_STACK(state->stack), box, name);
     return box;
@@ -481,11 +522,13 @@ static void activate(GtkApplication *app, gpointer data) {
     (void)data;
     SetupState *state = g_new0(SetupState, 1);
     state->app = app;
+    state->demo_mode = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(app), "danenone-demo"));
     state->window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(state->window), "Configurar Influent Danenone");
     gtk_window_set_default_size(GTK_WINDOW(state->window), 1280, 800);
     gtk_window_set_position(GTK_WINDOW(state->window), GTK_WIN_POS_CENTER);
-    gtk_window_set_resizable(GTK_WINDOW(state->window), FALSE);
+    gtk_window_set_resizable(GTK_WINDOW(state->window), TRUE);
+    gtk_window_set_decorated(GTK_WINDOW(state->window), FALSE);
 
     GtkWidget *background = gtk_overlay_new();
     GtkWidget *background_base = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -515,15 +558,10 @@ static void activate(GtkApplication *app, gpointer data) {
     GtkWidget *outer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_name(outer, "oobe-outer");
     gtk_overlay_add_overlay(GTK_OVERLAY(background), outer);
-    gtk_widget_set_halign(outer, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(outer, GTK_ALIGN_CENTER);
-    gtk_widget_set_hexpand(outer, FALSE);
-    gtk_widget_set_vexpand(outer, FALSE);
-    gtk_widget_set_size_request(outer, 1090, 660);
-    gtk_widget_set_margin_top(outer, 50);
-    gtk_widget_set_margin_bottom(outer, 50);
-    gtk_widget_set_margin_start(outer, 70);
-    gtk_widget_set_margin_end(outer, 70);
+    gtk_widget_set_halign(outer, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(outer, GTK_ALIGN_FILL);
+    gtk_widget_set_hexpand(outer, TRUE);
+    gtk_widget_set_vexpand(outer, TRUE);
     state->outer = outer;
 
     state->finish_overlay = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -611,15 +649,31 @@ static void activate(GtkApplication *app, gpointer data) {
     gtk_label_set_justify(GTK_LABEL(left_note), GTK_JUSTIFY_CENTER);
     gtk_box_pack_end(GTK_BOX(left), left_note, FALSE, FALSE, 25);
 
+    GtkWidget *right_shell = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_halign(right_shell, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(right_shell, GTK_ALIGN_CENTER);
+    gtk_widget_set_hexpand(right_shell, FALSE);
+    gtk_widget_set_vexpand(right_shell, TRUE);
+    gtk_widget_set_size_request(right_shell, 560, -1);
+    gtk_box_pack_start(GTK_BOX(body), right_shell, FALSE, TRUE, 0);
     GtkWidget *right = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_name(right, "oobe-right");
-    gtk_box_pack_start(GTK_BOX(body), right, TRUE, TRUE, 0);
+    gtk_widget_set_halign(right, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(right, GTK_ALIGN_CENTER);
+    gtk_widget_set_hexpand(right, FALSE);
+    gtk_widget_set_vexpand(right, FALSE);
+    gtk_widget_set_size_request(right, 560, -1);
+    gtk_widget_set_margin_top(right, 24);
+    gtk_widget_set_margin_bottom(right, 24);
+    gtk_box_pack_start(GTK_BOX(right_shell), right, FALSE, FALSE, 0);
     state->title = gtk_label_new(NULL);
     gtk_widget_set_name(state->title, "oobe-title");
+    gtk_widget_set_size_request(state->title, 450, -1);
     gtk_label_set_xalign(GTK_LABEL(state->title), 0.0);
-    gtk_box_pack_start(GTK_BOX(right), state->title, FALSE, FALSE, 26);
+    gtk_box_pack_start(GTK_BOX(right), state->title, FALSE, FALSE, 18);
     state->subtitle = gtk_label_new(NULL);
     gtk_widget_set_name(state->subtitle, "oobe-subtitle");
+    gtk_widget_set_size_request(state->subtitle, 450, -1);
     gtk_label_set_xalign(GTK_LABEL(state->subtitle), 0.0);
     gtk_label_set_line_wrap(GTK_LABEL(state->subtitle), TRUE);
     gtk_box_pack_start(GTK_BOX(right), state->subtitle, FALSE, FALSE, 0);
@@ -627,7 +681,14 @@ static void activate(GtkApplication *app, gpointer data) {
     state->stack = gtk_stack_new();
     gtk_stack_set_transition_type(GTK_STACK(state->stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
     gtk_stack_set_transition_duration(GTK_STACK(state->stack), 260);
-    gtk_box_pack_start(GTK_BOX(right), state->stack, TRUE, TRUE, 0);
+    gtk_stack_set_hhomogeneous(GTK_STACK(state->stack), FALSE);
+    gtk_stack_set_vhomogeneous(GTK_STACK(state->stack), FALSE);
+    gtk_widget_set_size_request(state->stack, 450, 190);
+    gtk_widget_set_halign(state->stack, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(state->stack, GTK_ALIGN_CENTER);
+    gtk_widget_set_hexpand(state->stack, FALSE);
+    gtk_widget_set_vexpand(state->stack, FALSE);
+    gtk_box_pack_start(GTK_BOX(right), state->stack, FALSE, FALSE, 0);
 
     GtkWidget *welcome = make_page(state, "Bienvenida", "Puedes revisar cada decisión antes de aplicarla. Danenone no descargará idiomas ni modificará preferencias sin pasar por tus controles.");
     gtk_box_pack_end(GTK_BOX(welcome), make_card_label("El cubo te acompañará en cada paso."), FALSE, FALSE, 0);
@@ -672,7 +733,7 @@ static void activate(GtkApplication *app, gpointer data) {
     gtk_widget_set_name(state->status, "oobe-status");
     gtk_label_set_xalign(GTK_LABEL(state->status), 0.0);
     gtk_label_set_line_wrap(GTK_LABEL(state->status), TRUE);
-    gtk_box_pack_start(GTK_BOX(right), state->status, FALSE, FALSE, 12);
+    gtk_box_pack_start(GTK_BOX(right), state->status, FALSE, FALSE, 8);
 
     GtkWidget *actions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_set_name(actions, "oobe-actions");
@@ -680,7 +741,7 @@ static void activate(GtkApplication *app, gpointer data) {
     state->continue_button = make_action_button("Comenzar", OOBE_ICON_DIR "/arrow-right.svg", "oobe-primary", GTK_POS_RIGHT);
     gtk_box_pack_start(GTK_BOX(actions), state->back_button, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(actions), state->continue_button, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(right), actions, FALSE, FALSE, 22);
+    gtk_box_pack_end(GTK_BOX(right), actions, FALSE, FALSE, 14);
 
     g_signal_connect(state->continue_button, "clicked", G_CALLBACK(continue_clicked), state);
     g_signal_connect(state->back_button, "clicked", G_CALLBACK(back_clicked), state);
@@ -691,36 +752,36 @@ static void activate(GtkApplication *app, gpointer data) {
     gtk_css_provider_load_from_data(css,
         "window { background: #071421; color: #f7f9ff; }"
         "#oobe-wash { background: rgba(5,12,28,0.42); }"
-        "#oobe-outer { background: rgba(8,17,36,0.70); border: 1px solid rgba(255,255,255,0.22); border-radius: 30px; padding: 0; }"
+        "#oobe-outer { background: rgba(5,12,28,0.18); border: 0; border-radius: 0; padding: 0; }"
         "#oobe-header { background: rgba(8,17,36,0.38); padding: 18px 28px; border-bottom: 1px solid rgba(255,255,255,0.16); }"
         "#oobe-brand { font-size: 17px; font-weight: 700; color: #f6f8ff; }"
         "#oobe-stage { color: rgba(235,242,255,0.68); font-size: 13px; }"
-        "#oobe-left { background: rgba(22,34,66,0.50); border-radius: 0 0 0 30px; padding: 20px; }"
-        "#oobe-right { background: rgba(7,15,31,0.26); padding: 0 26px; }"
-        "#oobe-title { font-size: 29px; font-weight: 700; color: #ffffff; }"
+        "#oobe-left { background: rgba(22,34,66,0.50); border-radius: 0; padding: 40px; }"
+        "#oobe-right { background: transparent; border: 0; border-radius: 0; margin: 0; padding: 0; }"
+        "#oobe-title { font-size: 27px; font-weight: 700; color: #ffffff; }"
         "#oobe-subtitle, #oobe-status { font-size: 15px; color: rgba(235,242,255,0.72); }"
         "#oobe-left-title { font-size: 18px; font-weight: 700; color: #f5f8ff; }"
         "#oobe-cube-caption, #oobe-left-note { color: rgba(231,240,255,0.68); font-size: 14px; }"
-        "#oobe-page { background: rgba(3,10,24,0.38); border: 1px solid rgba(255,255,255,0.13); border-radius: 20px; margin-top: 20px; }"
+        "#oobe-page { background: transparent; border: 0; border-radius: 0; margin-top: 14px; }"
         "#oobe-card-label { color: rgba(235,242,255,0.76); font-size: 15px; }"
         "entry, combobox { background: rgba(3,9,20,0.54); color: #f7f9ff; border: 1px solid rgba(207,224,255,0.24); border-radius: 15px; padding: 11px 15px; }"
-        "entry:focus, combobox:focus { border: 2px solid rgba(153,108,235,0.90); }"
+        "entry:focus, combobox:focus { border: 2px solid rgba(72,214,165,0.92); }"
         "button { border-radius: 19px; padding: 10px 17px; min-height: 22px; font-weight: 600; }"
         "button:hover { background: rgba(255,255,255,0.16); }"
-        "button:active { background: rgba(151,111,232,0.72); }"
-        "#oobe-primary { background: rgba(106,42,174,0.94); color: white; border: 1px solid rgba(232,216,255,0.46); font-weight: 700; }"
-        "#oobe-primary:hover { background: rgba(132,64,211,0.98); }"
+        "button:active { background: rgba(44,176,139,0.74); }"
+        "#oobe-primary { background: rgba(20,126,103,0.96); color: white; border: 1px solid rgba(232,216,255,0.46); font-weight: 700; }"
+        "#oobe-primary:hover { background: rgba(28,164,128,0.98); }"
         "#oobe-secondary { background: rgba(255,255,255,0.08); color: #f3f6ff; border: 1px solid rgba(232,240,255,0.22); }"
         "#oobe-close { background: rgba(255,255,255,0.08); color: #f3f6ff; border: 1px solid rgba(232,240,255,0.18); padding: 4px; }"
         "#oobe-close:hover { background: rgba(255,255,255,0.20); }"
         "#oobe-finish { background: rgba(3,9,21,0.72); }"
-        "#oobe-finish-panel { background: rgba(20,25,58,0.78); border: 1px solid rgba(255,255,255,0.24); border-radius: 30px; padding: 30px; }"
+        "#oobe-finish-panel { background: rgba(10,43,43,0.84); border: 1px solid rgba(255,255,255,0.24); border-radius: 30px; padding: 30px; }"
         "#oobe-finish-title { color: #f8fbff; font-size: 24px; font-weight: 700; }"
         "#oobe-finish-caption { color: rgba(232,242,255,0.76); font-size: 14px; }"
         "spinner { color: #9cc9f3; }"
         "checkbutton { color: rgba(235,242,255,0.76); padding: 8px 2px; }"
         "progressbar trough { background: rgba(255,255,255,0.16); border-radius: 9px; min-height: 12px; }"
-        "progressbar progress { background: #9d68e6; border-radius: 9px; min-height: 12px; }",
+        "progressbar progress { background: #45d6a2; border-radius: 9px; min-height: 12px; }",
         -1, NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(css), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     g_object_unref(css);
@@ -730,9 +791,11 @@ static void activate(GtkApplication *app, gpointer data) {
     gtk_widget_set_opacity(state->outer, state->intro_opacity);
     state->cube_timer = g_timeout_add(900, animate_cube, state);
     gtk_widget_show_all(state->window);
+    gtk_window_fullscreen(GTK_WINDOW(state->window));
     gtk_widget_hide(state->finish_overlay);
     state->intro_timer = g_timeout_add(30, intro_step, state);
     set_stage(state, STAGE_WELCOME);
+    if (state->demo_mode) state->demo_timer = g_timeout_add_seconds(3, demo_step, state);
 }
 
 int main(int argc, char **argv) {
@@ -741,14 +804,19 @@ int main(int argc, char **argv) {
         return 0;
     }
     gboolean replay = FALSE;
-    for (int i = 1; i < argc; i++) if (g_strcmp0(argv[i], "--replay") == 0) replay = TRUE;
+    gboolean demo = FALSE;
+    for (int i = 1; i < argc; i++) {
+        if (g_strcmp0(argv[i], "--replay") == 0) replay = TRUE;
+        if (g_strcmp0(argv[i], "--demo") == 0) demo = TRUE;
+    }
     if (!replay && setup_complete()) return 0;
     GtkApplication *app = gtk_application_new("com.influent.danenone.firstboot", G_APPLICATION_DEFAULT_FLAGS);
+    g_object_set_data(G_OBJECT(app), "danenone-demo", GINT_TO_POINTER(demo));
     g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
     char **gtk_argv = g_new0(char *, (gsize)argc + 1);
     int gtk_argc = 0;
     for (int i = 0; i < argc; i++) {
-        if (g_strcmp0(argv[i], "--replay") == 0) continue;
+        if (g_strcmp0(argv[i], "--replay") == 0 || g_strcmp0(argv[i], "--demo") == 0) continue;
         gtk_argv[gtk_argc++] = argv[i];
     }
     int status = g_application_run(G_APPLICATION(app), gtk_argc, gtk_argv);

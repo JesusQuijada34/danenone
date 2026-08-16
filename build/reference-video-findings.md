@@ -37,3 +37,27 @@ La segunda captura local todavía está dominada por el PNG del cubo y no muestr
 ## Validación dentro de la ISO
 
 La captura `oobe-iso-reference.png` confirma que el diseño llega al runtime real de Archiso. El arroyo aparece alrededor de la ventana central, el panel usa cristal oscuro translúcido, el logo PNG real está contenido en la columna izquierda, el cierre superior se muestra como SVG y la flecha del botón principal se renderiza correctamente después de añadir `librsvg` al perfil. La estética está ahora mucho más cerca de la introducción del video que la versión clara anterior.
+
+
+## Fullscreen y modo demostración
+
+La nueva captura fullscreen confirma el ajuste solicitado: la ventana ya ocupa la pantalla completa, el borde externo es recto y el redondeo se trasladó al panel de interacción derecho, con márgenes internos amplios. El panel izquierdo conserva el cubo y la guía visual sobre el arroyo.
+
+El modo `--demo` también fue probado. Después de tres segundos acepta la bienvenida, pasa a Conectividad y se detiene si NetworkManager no informa una conexión real. La captura muestra el mensaje de detención y confirma que no crea usuarios, no cambia contraseñas y no aplica ninguna configuración automáticamente. Esto mantiene la demostración segura y separada del flujo normal del OOBE.
+
+
+## Revisión específica de proporciones del cuadro
+
+Las capturas del video muestran que el cuadro de interacción no ocupa casi toda la altura disponible. En una composición de 1280×720, el contenido útil del panel derecho se concentra aproximadamente en la franja central, con un ancho moderado y un margen visible de fondo a izquierda, derecha y abajo. El instalador inicial usa un tratamiento casi fullscreen, pero la tarjeta interna permanece contenida; la pantalla de personalización mantiene la ilustración a la izquierda y un bloque derecho más estrecho, con controles agrupados y un botón Next pequeño en la esquina inferior derecha.
+
+La corrección para Danenone será reducir el panel derecho interno respecto al fullscreen: conservar el margen de 40 px alrededor, bajar su expansión vertical mediante una caja de contenido con `valign=GTK_ALIGN_CENTER`, usar un ancho aproximado del 58–62 % de la pantalla y evitar que el `GtkStack` estire la tarjeta hasta el borde inferior. No se cambiarán el fondo, la tipografía ni el resto del tema.
+
+
+## Iteración de simplificación visual
+
+Se eliminó la tarjeta grande que envolvía todo el contenido derecho. La composición actual mantiene la pantalla completa, pero deja el contenido derecho sobre el fondo oscuro y reserva el redondeo únicamente para elementos que realmente lo necesitan. El resultado muestra más fondo visible, una jerarquía más cercana a la captura del video y un cuadro de interacción que ya no domina la pantalla. También se redujeron el ancho del contenido, la altura del stack y los márgenes internos.
+
+
+## Validación final fullscreen y verde
+
+La ventana GTK fue medida con `xwininfo` en Xvfb y ocupa exactamente `1280x800+0+0`, por lo que el OOBE sí es fullscreen real; lo que debía reducirse era el cuadro interno, no la ventana raíz. La versión final elimina la tarjeta pesada, deja el fondo del arroyo visible y cambia el botón principal, foco, estados activos, panel final y barra de progreso a una paleta verde/verde azulado. La ISO final contiene un squashfs de aproximadamente 518 MiB y el hash SHA-256 del binario `firstboot` extraído de la ISO coincide con el binario compilado del proyecto.
