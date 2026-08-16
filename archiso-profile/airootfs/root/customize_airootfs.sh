@@ -20,4 +20,28 @@ background=07101f
 foreground=f2f6ff
 EOF
 chown -R danenone:danenone /home/danenone
+systemctl enable NetworkManager.service || true
+install -d -m 0750 /etc/sudoers.d
+cat > /etc/sudoers.d/influent-firstboot <<'EOF'
+danenone ALL=(root) NOPASSWD: /usr/bin/useradd, /usr/bin/chpasswd, /usr/bin/sed, /usr/bin/id
+EOF
+chmod 0440 /etc/sudoers.d/influent-firstboot
 systemctl enable greetd.service || true
+
+# Aplicar identidad propia después de instalar el paquete filesystem.
+cat > /usr/lib/os-release <<'EOF'
+NAME="Influent Danenone"
+PRETTY_NAME="Influent Danenone"
+ID=influent
+ID_LIKE=arch
+BUILD_ID=danenone
+ANSI_COLOR="38;2;84;126;190"
+HOME_URL="https://github.com/JesusQuijada34/danenone"
+DOCUMENTATION_URL="https://github.com/JesusQuijada34/danenone"
+SUPPORT_URL="https://github.com/JesusQuijada34/danenone/issues"
+BUG_REPORT_URL="https://github.com/JesusQuijada34/danenone/issues"
+PRIVACY_POLICY_URL="https://github.com/JesusQuijada34/danenone"
+LOGO=influent-danenone
+IMAGE_ID=influent-danenone
+IMAGE_VERSION=0.4.2
+EOF

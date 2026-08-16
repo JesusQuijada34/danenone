@@ -12,6 +12,7 @@ virtualbox-guest-utils-nox
 # Influent Danenone Wayland desktop
 hyprland
 gtk3
+librsvg
 gtk-layer-shell
 hyprpaper
 foot

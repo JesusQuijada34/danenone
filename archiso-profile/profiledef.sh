@@ -4,7 +4,7 @@ iso_name="influent-danenone"
 iso_label="INFLUENT_DANENONE"
 iso_publisher="Influent <https://github.com/JesusQuijada34/danenone>"
 iso_application="Influent Danenone — Linux + Hyprland"
-iso_version="0.4.1"
+iso_version="0.4.2"
 install_dir="influent"
 buildmodes=('iso')
 bootmodes=('bios.syslinux' 'uefi.grub')
@@ -19,6 +19,7 @@ file_permissions=(
   ["/usr/local/bin/influent-danenone-shell"]="0:0:755"
   ["/usr/local/bin/influent-danenone-splashboot"]="0:0:755"
   ["/usr/local/bin/influent-danenone-tour"]="0:0:755"
-  ["/usr/local/bin/influent-danenone-session"]="0:0:755"
+  ["/usr/local/bin/influent-danenone-firstboot"]="0:0:755"
+  ["/usr/local/bin/influent-danenone-start"]="0:0:755"
   ["/root/customize_airootfs.sh"]="0:0:755"
 )
