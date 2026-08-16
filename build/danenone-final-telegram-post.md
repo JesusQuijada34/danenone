@@ -1,39 +1,35 @@
-*Influent Danenone 0.3.0 — ISO Arch + Hyprland disponible*
+*Danenone — avance en vivo 6*
 
-La nueva imagen de Influent Danenone ya fue construida con un perfil reproducible de Archiso.
+La captura gráfica llegó al escritorio y mostró el cubito, pero reveló que el tour se estaba lanzando al mismo tiempo que el OOBE, por lo que el tour cubría la pantalla de configuración.
 
-*Incluye*
+La causa estaba en dos `exec-once` independientes de Hyprland. Ya se corrigieron ambos perfiles para ejecutar primero `influent-danenone-firstboot`, esperar a que termine y solo después iniciar `influent-danenone-tour`.
 
-• Arch Linux live environment.
-• Hyprland y sesión Wayland mediante greetd.
-• Shell nativo en C con GTK3 y GTK Layer Shell.
-• Barra inferior acrílica estilo Windows 11.
-• Notch superior conservado como capa Wayland independiente.
-• Hyprpaper con el fondo del arroyo seleccionado.
-• PipeWire, WirePlumber, NetworkManager y portal de escritorio.
-• Tour nativo de bienvenida para recorrer el escritorio.
-• Perfil gráfico sin `cloud-init` ni un paquete Python directo; el shell es C/GTK/Wayland.
+La próxima ISO se reconstruirá con esta secuencia. Así podremos ver el OOBE completo, crear el usuario y, al finalizar, entrar al tour y al escritorio sin ventanas superpuestas.
 
-*Descarga*
 
-[Release Influent Danenone 0.3.0](https://github.com/JesusQuijada34/danenone/releases/tag/v0.3.0)
+*Danenone — avance en vivo 7*
 
-*Integridad*
+La corrección de permisos funcionó: la nueva ISO ya muestra el OOBE real, con el cubo y la distribución de dos columnas, y el tour ya no se adelanta.
 
-MD5: `14cbc8c1ad3bf606afa93c3167cedd49`
+Al probar el paso de conectividad, el asistente consultó NetworkManager de forma real y no permitió continuar porque el servicio no estaba habilitado en la imagen. Esto confirma que el bloqueo de idioma antes de Wi-Fi sí funciona, pero también revela una corrección necesaria: habilitar `NetworkManager.service` durante la personalización de Archiso para que el adaptador de la VM y el hardware físico sean gestionados desde el arranque.
 
-SHA-256: `722ec141c7f13a5d459fc5723b46ef4271897462dc9e44e7583d33f45f41767a`
+Se aplicará esa corrección, se reconstruirá la ISO y se repetirá el flujo hasta usuario, reinicio de greetd, tour y escritorio.
 
-*Prueba rápida*
 
-```bash
-md5sum -c influent-danenone-0.3.0-x86_64.iso.md5
-sha256sum -c influent-danenone-0.3.0-x86_64.iso.sha256
-qemu-system-x86_64 -enable-kvm -m 2048 -smp 2 -cdrom influent-danenone-0.3.0-x86_64.iso -boot d
-```
+*Danenone — OOBE de referencia implementado*
 
-El Bot API de Telegram no permite adjuntar directamente una ISO de aproximadamente 709 MiB. Por eso la ISO está en el release público de GitHub y aquí se publican el enlace, los checksums y los pasos reproducibles.
+Se comparó el resumen de Gemini con el video y se confirmó que describen la misma introducción: panel centrado de vidrio, fondo dinámico, diseño de una/dos columnas, progreso inferior, tipografía sans-serif, transiciones suaves y reinicio con spinner.
 
-La prueba TCG ligera alcanzó el menú de arranque y cargó el kernel e initramfs. La validación gráfica completa requiere un host con más memoria que este sandbox, porque el proceso de VM fue terminado por presión de memoria.
+Implementación completada en C/GTK:
 
-*Influent Danenone: Arch, Hyprland, C nativo, notch, barra acrílica y tour integrado.*
+- Arroyo desenfocado alrededor de la ventana.
+- Panel central oscuro y translúcido con bordes redondeados.
+- Logo PNG real del cubo, sin usar el cubo SVG genérico como identidad.
+- Iconos SVG underlined para continuar, atrás, red, confirmación y cierre.
+- Paleta azul profunda/violeta inspirada en la referencia.
+- Fade-in del panel y pantalla final “Preparando tu escritorio”.
+- `librsvg` añadido al perfil para renderizar SVG en la ISO.
+- Captura validada dentro de QEMU con la ISO real.
+
+El cambio quedó publicado en `main` del repositorio público `JesusQuijada34/danenone`.
+Commit: `da8a83e` — `Redesign OOBE with reference glass visual system`.
