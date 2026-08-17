@@ -1,4 +1,3 @@
-CC ?= gcc
 CFLAGS += -O2 -Wall -Wextra -Wpedantic $(shell pkg-config --cflags gtk+-3.0 gtk-layer-shell-0)
 LDLIBS += $(shell pkg-config --libs gtk+-3.0 gtk-layer-shell-0) -lm
 
@@ -18,6 +17,11 @@ influent-danenone-firstboot: first_boot_setup.c
 
 influent-danenone-splashboot: splashboot.c
 	$(CC) $(CFLAGS) -o $@ $< $(LDLIBS)
+
+# Shell experimental Qt6; se mantiene separado hasta validar Hyprland real.
+qt6-shell:
+	cmake -S qt_shell -B qt_shell/build -DCMAKE_BUILD_TYPE=Release
+	cmake --build qt_shell/build -j$${JOBS:-2}
 
 clean:
 	rm -f influent-danenone-shell influent-danenone-tour influent-danenone-start influent-danenone-firstboot influent-danenone-splashboot

@@ -1,0 +1,20 @@
+# Influent Danenone Enterprise
+firefox
+dolphin
+vlc
+git
+openssh
+cmake
+ninja
+gcc
+clang
+gdb
+valgrind
+qt6-base
+qt6-declarative
+qt6-wayland
+qt6-svg
+networkmanager
+pipewire
+wireplumber
+polkit

@@ -23,6 +23,18 @@ curl
 pipewire
 wireplumber
 xdg-desktop-portal-hyprland
+# Shell Qt6 y composición Wayland
+qt6-base
+qt6-wayland
+qt6-svg
+# Explorador de archivos KDE integrado con el botón Archivos del shell
+dolphin
+firefox
+vlc
+shared-mime-info
+desktop-file-utils
+python
+python-requests
 mesa
 polkit
 greetd

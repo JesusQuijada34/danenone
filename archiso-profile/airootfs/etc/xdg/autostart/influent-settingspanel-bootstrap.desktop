@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Influent Settingspanel Bootstrap
+Comment=Instala Configuración de Influent Danenone mediante Fluthin
+Exec=/usr/local/libexec/influent-settingspanel-bootstrap
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

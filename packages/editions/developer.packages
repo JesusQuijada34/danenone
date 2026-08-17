@@ -1,0 +1,24 @@
+# Influent Danenone Developer
+firefox
+dolphin
+vlc
+git
+base-devel
+cmake
+ninja
+gcc
+clang
+gdb
+valgrind
+python
+python-pip
+nodejs
+npm
+qt6-base
+qt6-declarative
+qt6-wayland
+qt6-svg
+qtcreator
+networkmanager
+pipewire
+wireplumber

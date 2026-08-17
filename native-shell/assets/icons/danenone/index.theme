@@ -1,0 +1,33 @@
+[Icon Theme]
+Name=Danenone
+Comment=Influent Danenone SVG icon theme
+Inherits=hicolor
+Directories=apps/scalable,actions/scalable,places/scalable,mimetypes/scalable
+
+[apps/scalable]
+Size=16
+MinSize=16
+MaxSize=512
+Type=Scalable
+Context=Applications
+
+[actions/scalable]
+Size=16
+MinSize=16
+MaxSize=512
+Type=Scalable
+Context=Actions
+
+[places/scalable]
+Size=16
+MinSize=16
+MaxSize=512
+Type=Scalable
+Context=Places
+
+[mimetypes/scalable]
+Size=16
+MinSize=16
+MaxSize=512
+Type=Scalable
+Context=MimeTypes

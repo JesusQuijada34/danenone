@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/influent-danenone"
+FOUNDSTORE_MARKER="$STATE_DIR/foundstore-bootstrap.done"
+SETTINGSPANEL_MARKER="$STATE_DIR/settingspanel-bootstrap.done"
+mkdir -p "$STATE_DIR"
+
+command -v flut >/dev/null 2>&1 || exit 0
+
+if [ ! -e "$FOUNDSTORE_MARKER" ]; then
+    if flut install JesusQuijada34/foundstore --quiet; then
+        : > "$FOUNDSTORE_MARKER"
+    fi
+fi
+
+if [ ! -e "$SETTINGSPANEL_MARKER" ]; then
+    if flut install JesusQuijada34/settingspanel --quiet; then
+        : > "$SETTINGSPANEL_MARKER"
+    fi
+fi

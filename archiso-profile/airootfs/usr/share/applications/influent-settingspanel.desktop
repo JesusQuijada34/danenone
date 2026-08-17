@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Configuración de Influent Danenone
+Comment=Temas, fondos, notch y actualizaciones
+Exec=flut launch JesusQuijada34/settingspanel
+Icon=danenone-settings
+Categories=Settings;System;
+Terminal=false
