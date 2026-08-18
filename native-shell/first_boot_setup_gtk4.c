@@ -8,16 +8,10 @@
 #define OOBE_WALLPAPER_PATH "/usr/share/backgrounds/influent/oobe-river-blurred.jpg"
 #define LOCAL_LOGO_PATH "/home/ubuntu/danenone/native-shell/assets/danenone-cube/danenone-cube-logo.png"
 #define LOCAL_WALLPAPER_PATH "/home/ubuntu/danenone/native-shell/assets/oobe-river-blurred.jpg"
+#define LANGUAGE_MANIFEST_PATH "/usr/share/influent/languages/manifest.tsv"
+#define LOCAL_LANGUAGE_MANIFEST_PATH "/home/ubuntu/danenone/native-shell/languages/manifest.tsv"
 #define PAGE_COUNT 12
 
-static const char *LANGUAGE_LABELS[] = {
-    "English — United States",
-    "Español — Latinoamérica",
-    "Español — España",
-    "Português — Brasil",
-    NULL
-};
-static const char *LANGUAGE_CODES[] = {"en_US", "es_419", "es_ES", "pt_BR"};
 static const char *EDITION_LABELS[] = {
     "Home — uso personal",
     "Enterprise — administración y desarrollo",
@@ -38,6 +32,7 @@ typedef struct {
     GtkWidget *dark_toggle, *full_notch_toggle, *dynamic_notch_toggle;
     GtkWidget *language_dropdown, *edition_dropdown, *network_status;
     GtkWidget *license_accept, *username, *password, *summary;
+    GPtrArray *language_codes;
     guint splash_timer, marquee_timer, intro_timer, final_timer;
     double intro_opacity, brand_reveal;
     int page;
@@ -53,6 +48,40 @@ static guint dropdown_index(GtkWidget *dropdown) {
 
 static GtkWidget *make_dropdown(const char *const *items) {
     GtkStringList *model = gtk_string_list_new(items);
+    GtkWidget *dropdown = gtk_drop_down_new(G_LIST_MODEL(model), NULL);
+    gtk_widget_add_css_class(dropdown, "dropdown");
+    g_object_unref(model);
+    return dropdown;
+}
+
+static const char *language_code(Oobe *o) {
+    guint index = dropdown_index(o->language_dropdown);
+    if (o->language_codes && index < o->language_codes->len) return g_ptr_array_index(o->language_codes, index);
+    return "en";
+}
+
+static GtkWidget *make_language_dropdown(Oobe *o) {
+    GtkStringList *model = gtk_string_list_new(NULL);
+    o->language_codes = g_ptr_array_new_with_free_func(g_free);
+    g_ptr_array_add(o->language_codes, g_strdup("en"));
+    gtk_string_list_append(model, "English — United States (integrado)");
+    const char *manifest = g_file_test(LANGUAGE_MANIFEST_PATH, G_FILE_TEST_EXISTS) ? LANGUAGE_MANIFEST_PATH : LOCAL_LANGUAGE_MANIFEST_PATH;
+    gchar *contents = NULL;
+    if (g_file_get_contents(manifest, &contents, NULL, NULL)) {
+        gchar **lines = g_strsplit(contents, "\n", -1);
+        for (guint i = 0; lines[i]; i++) {
+            gchar **parts = g_strsplit(lines[i], "|", 5);
+            if (g_strv_length(parts) >= 5 && parts[0][0] != '\0' && g_strcmp0(parts[0], "en") != 0) {
+                g_ptr_array_add(o->language_codes, g_strdup(parts[0]));
+                gchar *label = g_strdup_printf("%s — %s", parts[4], parts[0]);
+                gtk_string_list_append(model, label);
+                g_free(label);
+            }
+            g_strfreev(parts);
+        }
+        g_strfreev(lines);
+    }
+    g_free(contents);
     GtkWidget *dropdown = gtk_drop_down_new(G_LIST_MODEL(model), NULL);
     gtk_widget_add_css_class(dropdown, "dropdown");
     g_object_unref(model);
@@ -84,7 +113,7 @@ static void save_preferences(Oobe *o) {
     const int notch_width = g_strcmp0(notch, "dynamic") == 0 ? 220 : 360;
     const int notch_height = 28;
     const int notch_radius = g_strcmp0(notch, "dynamic") == 0 ? 18 : 14;
-    const char *language = (o && o->language_dropdown) ? LANGUAGE_CODES[dropdown_index(o->language_dropdown)] : "en_US";
+    const char *language = (o && o->language_dropdown) ? language_code(o) : "en";
     const char *edition = (o && o->edition_dropdown) ? EDITION_CODES[dropdown_index(o->edition_dropdown)] : "home";
     gchar *contents = g_strdup_printf(
         "theme=%s\nnotch=%s\nnotch_width=%d\nnotch_height=%d\nnotch_radius=%d\nnotch_border=none\nlanguage=%s\nedition=%s\nnetwork_available=%s\n",
@@ -201,7 +230,7 @@ static GtkWidget *welcome_page(void) {
 
 static GtkWidget *language_network_page(Oobe *o) {
     GtkWidget *box = base_page("Idioma y conectividad", "El idioma se elige al principio. English permanece disponible sin conexión; las opciones adicionales se comprobarán antes de descargar sus paquetes.");
-    o->language_dropdown = make_dropdown(LANGUAGE_LABELS);
+    o->language_dropdown = make_language_dropdown(o);
     gtk_box_append(GTK_BOX(box), text_label("Idioma de la interfaz", "field-label"));
     gtk_box_append(GTK_BOX(box), o->language_dropdown);
     o->network_status = text_label("Comprobando NetworkManager…", "network-status");
@@ -307,7 +336,7 @@ static void update_network_status(Oobe *o) {
 
 static void update_summary(Oobe *o) {
     if (!o->summary) return;
-    const char *language = LANGUAGE_CODES[dropdown_index(o->language_dropdown)];
+    const char *language = language_code(o);
     const char *edition = EDITION_CODES[dropdown_index(o->edition_dropdown)];
     gchar *text = g_strdup_printf("Sistema: Influent Danenone\nEdición: %s\nIdioma: %s\nDisco: se confirmará por el instalador\nModo: instalación completa o dual boot según tu elección\nIdentidad OEM: se generará localmente y no muestra el número de serie", edition, language);
     gtk_label_set_text(GTK_LABEL(o->summary), text);
