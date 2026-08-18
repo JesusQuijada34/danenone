@@ -17,7 +17,7 @@ from pathlib import Path
 
 TRANSLATIONS = {
     "en": {"start": "Start", "settings": "Settings", "continue": "Continue", "cancel": "Cancel", "language": "Language"},
-    "es": {"start": "Inicio", "settings": "Configuración", "continue": "Continuar", "cancel": "Cancelar", "language": "Idioma"},
+    "es": {"start": "Inicio", "settings": "Configuración", "continue": "Continuar", "cancel": "Cancelar", "language": "Idioma", "light": "Modo claro", "dark": "Modo oscuro"},
     "fr": {"start": "Démarrer", "settings": "Réglages", "continue": "Continuer", "cancel": "Annuler", "language": "Langue"},
     "de": {"start": "Start", "settings": "Einstellungen", "continue": "Weiter", "cancel": "Abbrechen", "language": "Sprache"},
     "pt": {"start": "Iniciar", "settings": "Definições", "continue": "Continuar", "cancel": "Cancelar", "language": "Idioma"},
@@ -82,6 +82,10 @@ def build_one(out_dir: Path, code: str, name: str, version: str) -> Path:
             "strings": TRANSLATIONS.get(code, {}),
         }
         (data_dir / f"{code}.json").write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        strings = TRANSLATIONS.get(code, {})
+        lines = [f"# locale={code}", f"# display_name={name}", f"# translation_status={catalog['translation_status']}"]
+        lines.extend(f"{key}={value}" for key, value in strings.items())
+        (data_dir / f"{code}.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
         package_path = out_dir / f"influent-language-{code}_{version}_all.deb"
         subprocess.run(["dpkg-deb", "--build", "--root-owner-group", str(root), str(package_path)], check=True, stdout=subprocess.DEVNULL)
     return package_path

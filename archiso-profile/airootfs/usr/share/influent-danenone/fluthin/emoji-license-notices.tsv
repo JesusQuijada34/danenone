@@ -1,0 +1,11 @@
+# source|license|policy|note
+https://github.com/tetunori/fluent-emoji-webfont|MIT plus upstream Microsoft Fluent Emoji MIT assets|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://github.com/tetunori/fluent-emoji-webfont|MIT plus upstream Microsoft Fluent Emoji MIT assets|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://github.com/tetunori/fluent-emoji-webfont|MIT plus upstream Microsoft Fluent Emoji MIT assets|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://github.com/tetunori/fluent-emoji-webfont|MIT plus upstream Microsoft Fluent Emoji MIT assets|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://github.com/googlefonts/noto-emoji|SIL OFL 1.1 for fonts; Apache 2.0 for tools/resources|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://github.com/googlefonts/noto-emoji|SIL OFL 1.1|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://github.com/googlefonts/noto-emoji|SIL OFL 1.1|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://github.com/googlefonts/noto-emoji|Uses installed system font; no bundled asset|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://github.com/twitter/twemoji|CC-BY 4.0 for graphics; verify asset notices|sha256-pinned|Profile-only metadata; no proprietary Windows font included
+https://www.unicode.org/emoji/|Unicode data terms; system-font fallback|sha256-pinned|Profile-only metadata; no proprietary Windows font included

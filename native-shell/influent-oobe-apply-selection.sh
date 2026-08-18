@@ -38,4 +38,24 @@ tmp="$target_file.tmp.$$"
 } > "$tmp"
 chmod 0644 "$tmp"
 mv -f "$tmp" "$target_file"
+locale="en_US.UTF-8"
+case "$language" in
+    es) locale="es_ES.UTF-8" ;;
+    fr) locale="fr_FR.UTF-8" ;;
+    de) locale="de_DE.UTF-8" ;;
+    pt) locale="pt_BR.UTF-8" ;;
+    ru) locale="ru_RU.UTF-8" ;;
+    pl) locale="pl_PL.UTF-8" ;;
+    sl) locale="sl_SI.UTF-8" ;;
+    zh) locale="zh_CN.UTF-8" ;;
+    ja) locale="ja_JP.UTF-8" ;;
+    ko) locale="ko_KR.UTF-8" ;;
+    ar) locale="ar_SA.UTF-8" ;;
+    hi) locale="hi_IN.UTF-8" ;;
+esac
+locale_file="$target_root/etc/locale.conf"
+locale_tmp="$locale_file.tmp.$$"
+printf 'LANG=%s\nLANGUAGE_CODE=%s\n' "$locale" "$language" > "$locale_tmp"
+chmod 0644 "$locale_tmp"
+mv -f "$locale_tmp" "$locale_file"
 exit 0

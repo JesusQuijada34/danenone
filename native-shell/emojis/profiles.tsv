@@ -1,0 +1,11 @@
+# code|display_name|source_url|first_four_codepoints|license|asset_status
+fluent-compatible|Fluent-compatible|https://github.com/tetunori/fluent-emoji-webfont|U+1F600,U+1F680,U+1F44D,U+1F389|MIT plus upstream Microsoft Fluent Emoji MIT assets|profile-only
+noto-color|Noto Color Emoji|https://github.com/googlefonts/noto-emoji|U+1F600,U+1F602,U+1F603,U+1F604|SIL OFL 1.1 for fonts; Apache 2.0 for tools/resources|profile-only
+noto-monochrome|Noto Monochrome|https://github.com/googlefonts/noto-emoji|U+1F600,U+1F602,U+1F603,U+1F604|SIL OFL 1.1|profile-only
+twemoji-compatible|Twemoji-compatible|https://github.com/twitter/twemoji|U+1F600,U+1F602,U+1F603,U+1F604|CC-BY 4.0 for graphics; verify asset notices|profile-only
+fluent-flat|Fluent Flat|https://github.com/tetunori/fluent-emoji-webfont|U+1F600,U+1F680,U+1F44D,U+1F389|MIT plus upstream Microsoft Fluent Emoji MIT assets|profile-only
+fluent-high-contrast|Fluent High Contrast|https://github.com/tetunori/fluent-emoji-webfont|U+1F600,U+1F680,U+1F44D,U+1F389|MIT plus upstream Microsoft Fluent Emoji MIT assets|profile-only
+fluent-inverted|Fluent High Contrast Inverted|https://github.com/tetunori/fluent-emoji-webfont|U+1F600,U+1F680,U+1F44D,U+1F389|MIT plus upstream Microsoft Fluent Emoji MIT assets|profile-only
+unicode-text|Unicode Text Fallback|https://www.unicode.org/emoji/|U+1F600,U+1F602,U+1F603,U+1F604|Unicode data terms; system-font fallback|profile-only
+symbolic|Symbolic Monochrome|https://github.com/googlefonts/noto-emoji|U+1F600,U+1F602,U+1F603,U+1F604|SIL OFL 1.1|profile-only
+system-default|System Default|https://github.com/googlefonts/noto-emoji|U+1F600,U+1F602,U+1F603,U+1F604|Uses installed system font; no bundled asset|profile-only
