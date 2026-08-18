@@ -1,5 +1,7 @@
-## Verificación final del OOBE
+## Restauración final del gestor de almacenamiento
 
-La captura `storage-english.png` confirma la composición solicitada: el gestor muestra una única lista de dispositivos de destino en un panel horizontal amplio. Debajo de esa lista aparecen únicamente las herramientas de `Partitions`, `Resize` y `Format`, cada una con su icono SVG. Los controles detallados permanecen dentro del área desplazable inferior y el estado de seguridad, `Back` y `Continue` quedan visibles en el pie del cuadro.
+La captura `storage-english.png` muestra el diseño solicitado: una lista vertical de almacenamiento con el icono del dispositivo a la izquierda y su nombre, capacidad y sistema de archivos a la derecha. Las particiones y otros dispositivos se agregan como filas sucesivas con sangría e iconografía diferenciada cuando `lsblk` los informa.
 
-La captura `welcome-english.png` mantiene el notch vacío en la parte superior y la identidad de Danenone —cubo y marca— debajo del notch. El cuadro conserva la geometría ancha y alta aprobada. La compilación GTK4 y la ejecución completa de las capturas finalizaron sin errores de compilación, `GTK-CRITICAL`, `GTK-WARNING` ni segmentaciones.
+Debajo de la lista aparece una barra horizontal de herramientas SVG para `Partition`, `Extend / resize` y `Format`. Cada herramienta enfoca el control correspondiente del plan de instalación. La primera fila real queda seleccionada con el indicador verde lateral.
+
+El entorno de prueba solo expuso `/dev/vda` y no informó particiones adicionales; por eso la captura contiene una sola fila real. El código no simula entradas: muestra directamente los discos y particiones que devuelve `lsblk`. La compilación y la ejecución completa finalizaron sin errores GTK, segmentaciones ni errores de compilación del proyecto.
