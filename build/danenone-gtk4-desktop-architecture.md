@@ -44,3 +44,15 @@ La superficie será plana con estética UWP: fondo real, tipografía legible, ic
 ## Persistencia y seguridad
 
 El archivo de distribución de iconos se escribirá de forma atómica. Los `.desktop` no se ejecutan por comandos concatenados: se lanzan mediante `GAppInfo` o `g_app_info_launch()`. Las rutas de volúmenes se obtienen de GIO y no se construyen a partir de texto sin validar.
+
+## Integración Wayland
+
+El prototipo GTK4 utiliza `gtk4-layer-shell` cuando el backend GDK es Wayland. El escritorio se coloca en la capa de fondo; la barra se ancla al borde inferior con una zona exclusiva de 84 píxeles; y el notch vacío se coloca en la capa superior con su propia reserva superior. En X11 o cuando el protocolo no está disponible, el shell usa un fallback de ventanas GTK4 normales y no invoca la API layer-shell.
+
+La dependencia se incorporará mediante el paquete nativo `gtk4-layer-shell` del perfil Archiso. No se incluye en el rootfs una biblioteca compilada en Ubuntu para evitar mezclar binarios de otra distribución.
+
+La biblioteca oficial documenta que layer-shell está diseñado para paneles, fondos, notificaciones y otros componentes de shell GTK4, y que la zona exclusiva evita que las ventanas maximizadas cubran un panel anclado [1].
+
+## Referencias
+
+[1]: https://github.com/wmww/gtk4-layer-shell "GTK4 Layer Shell — documentación oficial y API"

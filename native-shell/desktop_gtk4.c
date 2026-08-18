@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include <gio/gio.h>
 #include <gio/gdesktopappinfo.h>
+#include <gtk4-layer-shell.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib/gstdio.h>
 #include <locale.h>
@@ -31,6 +32,8 @@ typedef struct {
 typedef struct {
     GtkApplication *app;
     GtkWidget *window;
+    GtkWidget *taskbar_window;
+    GtkWidget *notch_window;
     GtkWidget *root;
     GtkWidget *desktop_grid;
     GtkWidget *taskbar;
@@ -42,6 +45,12 @@ typedef struct {
 
 static const char *asset_path(const char *installed, const char *local) {
     return g_file_test(installed, G_FILE_TEST_EXISTS) ? installed : local;
+}
+
+static gboolean layer_shell_available(void) {
+    GdkDisplay *display = gdk_display_get_default();
+    const char *name = display ? gdk_display_get_name(display) : NULL;
+    return name && g_str_has_prefix(name, "wayland-") && gtk_layer_is_supported();
 }
 
 static GtkWidget *picture_icon(const char *installed, const char *local, int size) {
@@ -312,6 +321,36 @@ static void build_taskbar(DesktopShell *shell) {
     shell->clock = gtk_label_new("");
     gtk_widget_add_css_class(shell->clock, "task-clock");
     gtk_box_append(GTK_BOX(shell->taskbar), shell->clock);
+    if (layer_shell_available()) {
+        shell->taskbar_window = gtk_application_window_new(shell->app);
+        gtk_layer_init_for_window(GTK_WINDOW(shell->taskbar_window));
+        gtk_layer_set_namespace(GTK_WINDOW(shell->taskbar_window), "influent-danenone-taskbar-gtk4");
+        gtk_layer_set_layer(GTK_WINDOW(shell->taskbar_window), GTK_LAYER_SHELL_LAYER_TOP);
+        gtk_layer_set_anchor(GTK_WINDOW(shell->taskbar_window), GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
+        gtk_layer_set_anchor(GTK_WINDOW(shell->taskbar_window), GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
+        gtk_layer_set_anchor(GTK_WINDOW(shell->taskbar_window), GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
+        gtk_layer_set_exclusive_zone(GTK_WINDOW(shell->taskbar_window), 84);
+        gtk_layer_set_margin(GTK_WINDOW(shell->taskbar_window), GTK_LAYER_SHELL_EDGE_BOTTOM, 8);
+        gtk_window_set_child(GTK_WINDOW(shell->taskbar_window), shell->taskbar);
+        gtk_window_present(GTK_WINDOW(shell->taskbar_window));
+    } else {
+        gtk_overlay_add_overlay(GTK_OVERLAY(shell->root), shell->taskbar);
+    }
+}
+
+static void build_notch(DesktopShell *shell) {
+    if (!layer_shell_available()) return;
+    shell->notch_window = gtk_application_window_new(shell->app);
+    gtk_layer_init_for_window(GTK_WINDOW(shell->notch_window));
+    gtk_layer_set_namespace(GTK_WINDOW(shell->notch_window), "influent-danenone-notch-gtk4");
+    gtk_layer_set_layer(GTK_WINDOW(shell->notch_window), GTK_LAYER_SHELL_LAYER_TOP);
+    gtk_layer_set_anchor(GTK_WINDOW(shell->notch_window), GTK_LAYER_SHELL_EDGE_TOP, TRUE);
+    gtk_layer_set_exclusive_zone(GTK_WINDOW(shell->notch_window), 28);
+    gtk_window_set_default_size(GTK_WINDOW(shell->notch_window), 360, 28);
+    GtkWidget *notch = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_add_css_class(notch, "notch");
+    gtk_window_set_child(GTK_WINDOW(shell->notch_window), notch);
+    gtk_window_present(GTK_WINDOW(shell->notch_window));
 }
 
 static void activate(GtkApplication *app, gpointer data) {
@@ -323,7 +362,18 @@ static void activate(GtkApplication *app, gpointer data) {
     collect_items(shell);
     shell->window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(shell->window), "Influent Danenone");
-    gtk_window_fullscreen(GTK_WINDOW(shell->window));
+    if (layer_shell_available()) {
+        gtk_layer_init_for_window(GTK_WINDOW(shell->window));
+        gtk_layer_set_namespace(GTK_WINDOW(shell->window), "influent-danenone-desktop-gtk4");
+        gtk_layer_set_layer(GTK_WINDOW(shell->window), GTK_LAYER_SHELL_LAYER_BACKGROUND);
+        gtk_layer_set_anchor(GTK_WINDOW(shell->window), GTK_LAYER_SHELL_EDGE_TOP, TRUE);
+        gtk_layer_set_anchor(GTK_WINDOW(shell->window), GTK_LAYER_SHELL_EDGE_BOTTOM, TRUE);
+        gtk_layer_set_anchor(GTK_WINDOW(shell->window), GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
+        gtk_layer_set_anchor(GTK_WINDOW(shell->window), GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
+        gtk_layer_set_exclusive_zone(GTK_WINDOW(shell->window), 0);
+    } else {
+        gtk_window_fullscreen(GTK_WINDOW(shell->window));
+    }
     shell->root = gtk_overlay_new();
     gtk_window_set_child(GTK_WINDOW(shell->window), shell->root);
     GtkWidget *wallpaper = gtk_picture_new_for_filename(asset_path(WALLPAPER_INSTALLED, WALLPAPER_LOCAL));
@@ -345,13 +395,16 @@ static void activate(GtkApplication *app, gpointer data) {
     g_signal_connect(shell->desktop_grid, "notify::width", G_CALLBACK(grid_size_changed), shell);
     g_signal_connect(shell->desktop_grid, "notify::height", G_CALLBACK(grid_size_changed), shell);
     build_taskbar(shell);
-    gtk_overlay_add_overlay(GTK_OVERLAY(shell->root), shell->taskbar);
-    GtkWidget *notch = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_widget_add_css_class(notch, "notch");
-    gtk_widget_set_halign(notch, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(notch, GTK_ALIGN_START);
-    gtk_widget_set_size_request(notch, 360, 28);
-    gtk_overlay_add_overlay(GTK_OVERLAY(shell->root), notch);
+    if (!gtk_layer_is_supported()) {
+        GtkWidget *notch = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_widget_add_css_class(notch, "notch");
+        gtk_widget_set_halign(notch, GTK_ALIGN_CENTER);
+        gtk_widget_set_valign(notch, GTK_ALIGN_START);
+        gtk_widget_set_size_request(notch, 360, 28);
+        gtk_overlay_add_overlay(GTK_OVERLAY(shell->root), notch);
+    } else {
+        build_notch(shell);
+    }
     GtkCssProvider *css = gtk_css_provider_new();
     gtk_css_provider_load_from_string(css,
         "window { background: #172a25; }"

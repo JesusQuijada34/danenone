@@ -13,6 +13,7 @@ virtualbox-guest-utils-nox
 hyprland
 gtk3
 gtk4
+gtk4-layer-shell
 gdk-pixbuf2
 systemd
 librsvg
