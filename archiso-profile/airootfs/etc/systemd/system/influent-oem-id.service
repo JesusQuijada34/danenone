@@ -1,0 +1,13 @@
+[Unit]
+Description=Influent Danenone local OEM identity
+After=local-fs.target
+Before=greetd.service
+ConditionPathExists=/sys/class/dmi/id
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/influent-oem-id --refresh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

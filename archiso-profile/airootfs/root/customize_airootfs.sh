@@ -26,6 +26,7 @@ cat > /etc/sudoers.d/influent-firstboot <<'EOF'
 danenone ALL=(root) NOPASSWD: /usr/bin/useradd, /usr/bin/chpasswd, /usr/bin/sed, /usr/bin/id
 EOF
 chmod 0440 /etc/sudoers.d/influent-firstboot
+systemctl enable influent-oem-id.service || true
 systemctl enable greetd.service || true
 
 # Aplicar identidad propia después de instalar el paquete filesystem.

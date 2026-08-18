@@ -1,5 +1,8 @@
+CC ?= cc
 CFLAGS += -O2 -Wall -Wextra -Wpedantic $(shell pkg-config --cflags gtk+-3.0 gtk-layer-shell-0)
 LDLIBS += $(shell pkg-config --libs gtk+-3.0 gtk-layer-shell-0) -lm
+GTK4_CFLAGS := $(shell pkg-config --cflags gtk4 gdk-pixbuf-2.0)
+GTK4_LIBS := $(shell pkg-config --libs gtk4 gdk-pixbuf-2.0)
 
 all: influent-danenone-shell influent-danenone-tour influent-danenone-start influent-danenone-firstboot influent-danenone-splashboot
 
@@ -12,8 +15,9 @@ influent-danenone-tour: tour.c cube_guide.c cube_guide.h
 influent-danenone-start: start_menu.c
 	$(CC) $(CFLAGS) -o $@ $< $(LDLIBS)
 
-influent-danenone-firstboot: first_boot_setup.c
-	$(CC) $(CFLAGS) -o $@ $< $(LDLIBS)
+# GTK4 es el OOBE activo; first_boot_setup.c se conserva solo como referencia histórica.
+influent-danenone-firstboot: first_boot_setup_gtk4.c
+	$(CC) -O2 -Wall -Wextra -Wpedantic $(GTK4_CFLAGS) -o $@ $< $(GTK4_LIBS)
 
 influent-danenone-splashboot: splashboot.c
 	$(CC) $(CFLAGS) -o $@ $< $(LDLIBS)
