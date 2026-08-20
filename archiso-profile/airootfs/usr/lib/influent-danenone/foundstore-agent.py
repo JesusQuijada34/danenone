@@ -16,6 +16,7 @@ import os
 import subprocess
 import sys
 import re
+import time
 from datetime import datetime, timezone
 import urllib.error
 import urllib.parse
@@ -24,6 +25,10 @@ from pathlib import Path
 
 CONFIG_PATH = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "foundstore-agent" / "config.json"
 PAIRING_CODE = re.compile(r"[A-Za-z0-9]{6,12}")
+
+
+class AgentError(RuntimeError):
+    pass
 
 
 def fail(message: str) -> None:
@@ -44,11 +49,11 @@ def request_json(url: str, payload: dict | None = None, agent_token: str | None 
         with urllib.request.urlopen(request, timeout=20) as response:
             body = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as error:
-        fail(f"el servidor respondió {error.code}: {error.read().decode('utf-8', 'replace')[:240]}")
+        raise AgentError(f"el servidor respondió {error.code}: {error.read().decode('utf-8', 'replace')[:240]}") from error
     except urllib.error.URLError as error:
-        fail(f"no se pudo contactar Foundstore: {error.reason}")
+        raise AgentError(f"no se pudo contactar Foundstore: {error.reason}") from error
     if "error" in body:
-        fail(body["error"].get("json", {}).get("message", "solicitud rechazada"))
+        raise AgentError(body["error"].get("json", {}).get("message", "solicitud rechazada"))
     return body.get("result", {}).get("data", {}).get("json", body)
 
 
@@ -133,6 +138,27 @@ def next_commands(config: dict, wait_seconds: int = 25) -> dict:
     return {"commands": commands, "retryAfterSeconds": data.get("retryAfterSeconds", 15)}
 
 
+def daemon(config: dict, max_cycles: int | None = None, sleep_fn=time.sleep) -> None:
+    """Mantiene un único long-poll, sin instalar ni aprobar paquetes automáticamente."""
+    delay = 1
+    cycles = 0
+    seen: set[str] = set()
+    while True:
+        try:
+            result = next_commands(config, wait_seconds=25)
+            delay = min(max(int(result.get("retryAfterSeconds", 15)), 1), 120)
+            for command in result["commands"]:
+                if command["id"] not in seen:
+                    seen.add(command["id"])
+                    print(f"Solicitud firmada recibida: {command['payload']['publisher']}/{command['payload']['packageSlug']}. Usa `foundstore-agent pending` y `approve` para continuar.")
+        except AgentError:
+            delay = min(delay * 2, 120)
+        cycles += 1
+        if max_cycles is not None and cycles >= max_cycles:
+            return
+        sleep_fn(delay)
+
+
 def resolve(config: dict, request_id: str, status: str, message: str | None = None) -> None:
     payload = {"deviceId": config["deviceId"], "requestId": request_id, "status": status}
     if message:
@@ -179,6 +205,10 @@ def reject(args: argparse.Namespace) -> None:
     print("Solicitud rechazada localmente.")
 
 
+def run_daemon(_: argparse.Namespace) -> None:
+    daemon(load_config())
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Agente local de solicitudes Foundstore para Danenone")
     subcommands = parser.add_subparsers(dest="command", required=True)
@@ -200,9 +230,14 @@ def build_parser() -> argparse.ArgumentParser:
     reject_parser.add_argument("request_id")
     reject_parser.add_argument("--message")
     reject_parser.set_defaults(handler=reject)
+    daemon_parser = subcommands.add_parser("daemon", help="Mantener la recepción de solicitudes firmadas con bajo consumo; nunca instala automáticamente")
+    daemon_parser.set_defaults(handler=run_daemon)
     return parser
 
 
 if __name__ == "__main__":
     arguments = build_parser().parse_args()
-    arguments.handler(arguments)
+    try:
+        arguments.handler(arguments)
+    except AgentError as error:
+        fail(str(error))

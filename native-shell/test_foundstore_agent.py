@@ -6,6 +6,7 @@ import json
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 
 MODULE_PATH = Path(__file__).with_name("foundstore-agent.py")
@@ -39,6 +40,13 @@ class FoundstoreAgentCommandTests(unittest.TestCase):
         self.assertFalse(agent._valid_command(command, config))
         expired, config = self.command(datetime.now(timezone.utc) - timedelta(seconds=1))
         self.assertFalse(agent._valid_command(expired, config))
+
+    def test_daemon_retries_with_progressive_backoff_and_never_installs(self):
+        delays: list[int] = []
+        config = {"deviceId": "device-abcdefghijkl", "commandKey": "command-key"}
+        with patch.object(agent, "next_commands", side_effect=[agent.AgentError("sin red"), {"commands": [], "retryAfterSeconds": 7}]):
+            agent.daemon(config, max_cycles=2, sleep_fn=delays.append)
+        self.assertEqual(delays, [2])
 
 
 if __name__ == "__main__":
