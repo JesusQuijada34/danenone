@@ -1,0 +1,2 @@
+# Dependencias del proyecto cloudmitiger-agenttask
+# El cliente DaneDesk usa exclusivamente la biblioteca estándar de Python.

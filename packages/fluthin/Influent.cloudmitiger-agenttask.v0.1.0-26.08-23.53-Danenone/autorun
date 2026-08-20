@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# Autorun script for cloudmitiger-agenttask
+/usr/bin/python3 ./cloudmitiger-agenttask.py
