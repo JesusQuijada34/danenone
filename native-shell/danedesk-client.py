@@ -13,6 +13,8 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import urllib.error
@@ -114,10 +116,40 @@ def check_status(args: argparse.Namespace) -> dict[str, Any]:
     return trpc_call(server, "danedesk.checkStatus", {"hardwareIdHash": hardware_id_hash()}, False)
 
 
+def notify_user(summary: str, body: str) -> None:
+    """Muestra un aviso local cuando el entorno de sesión ofrece notificaciones."""
+    command = shutil.which("notify-send")
+    if not command:
+        return
+    try:
+        subprocess.run([command, "--urgency=critical", summary, body], check=False, timeout=5, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError:
+        return
+
+
+def lock_visible_session() -> bool:
+    """Solicita el bloqueo real de la sesión mediante logind, sin borrar datos locales."""
+    command = shutil.which("loginctl")
+    if not command:
+        return False
+    try:
+        return subprocess.run([command, "lock-session"], check=False, timeout=10, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+    except OSError:
+        return False
+
+
 def enforce_lock(args: argparse.Namespace) -> dict[str, Any]:
     status = check_status(args)
     if status.get("recoveryRequired"):
-        save_json(LOCK_STATE_PATH, {"status": status.get("status"), "lockReason": status.get("lockReason"), "checkedAt": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()})
+        reason = str(status.get("lockReason") or "Este DaneDesk requiere recuperación autorizada.")
+        save_json(LOCK_STATE_PATH, {"status": status.get("status"), "lockReason": reason, "checkedAt": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(), "visibleLockRequested": lock_visible_session()})
+        notify_user("DaneDesk bloqueado", reason)
+    elif not status.get("enrolled") and CONFIG_PATH.exists():
+        CONFIG_PATH.unlink()
+        if LOCK_STATE_PATH.exists():
+            LOCK_STATE_PATH.unlink()
+        status["unlinked"] = True
+        notify_user("DaneDesk desvinculado", "La vinculación en la nube ya no existe. Activa DaneDesk de nuevo para reconectar este equipo.")
     elif LOCK_STATE_PATH.exists():
         LOCK_STATE_PATH.unlink()
     return status
