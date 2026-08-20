@@ -9,11 +9,14 @@ explícitamente ``approve <id>`` en el terminal local de Danenone.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import hmac
 import json
 import os
 import subprocess
 import sys
 import re
+from datetime import datetime, timezone
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -74,7 +77,7 @@ def pair(args: argparse.Namespace) -> None:
         fail("el código de emparejamiento debe ser alfanumérico y tener entre 6 y 12 caracteres")
     payload = {"code": code, "displayName": args.name}
     data = request_json(f"{server}/api/trpc/agent.bootstrap", payload)
-    write_config({"server": server, "deviceId": data["id"], "agentToken": data["agentToken"], "platform": data.get("platform", "Danenone")})
+    write_config({"server": server, "deviceId": data["id"], "agentToken": data["agentToken"], "commandKey": data["commandKey"], "platform": data.get("platform", "Danenone")})
     print(f"Equipo emparejado: {args.name} ({data['id']})")
     print("La credencial se guardó con permisos locales 0600.")
 
@@ -103,6 +106,31 @@ def pending(config: dict) -> list[dict]:
     query = urllib.parse.urlencode({"input": json.dumps({"json": {"deviceId": config["deviceId"]}})})
     data = request_json(f"{config['server']}/api/trpc/agent.pending?{query}", agent_token=config["agentToken"])
     return data if isinstance(data, list) else []
+
+
+def _valid_command(command: dict, config: dict) -> bool:
+    required = ("id", "deviceId", "type", "payload", "expiresAt", "signature")
+    if any(key not in command for key in required) or command["deviceId"] != config["deviceId"]:
+        return False
+    try:
+        expires_at = datetime.fromisoformat(command["expiresAt"].replace("Z", "+00:00"))
+        if expires_at <= datetime.now(timezone.utc):
+            return False
+    except (TypeError, ValueError):
+        return False
+    if not config.get("commandKey"):
+        return False
+    signed = {key: command[key] for key in ("id", "deviceId", "type", "payload", "expiresAt")}
+    canonical = json.dumps(signed, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    expected = hmac.new(config["commandKey"].encode("utf-8"), canonical, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, str(command["signature"]))
+
+
+def next_commands(config: dict, wait_seconds: int = 25) -> dict:
+    query = urllib.parse.urlencode({"input": json.dumps({"json": {"deviceId": config["deviceId"], "waitSeconds": min(max(wait_seconds, 0), 25)}})})
+    data = request_json(f"{config['server']}/api/trpc/agent.next?{query}", agent_token=config["agentToken"])
+    commands = [command for command in data.get("commands", []) if _valid_command(command, config)]
+    return {"commands": commands, "retryAfterSeconds": data.get("retryAfterSeconds", 15)}
 
 
 def resolve(config: dict, request_id: str, status: str, message: str | None = None) -> None:
