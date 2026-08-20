@@ -227,6 +227,11 @@ static void save_preferences(Oobe *o) {
 }
 
 static gboolean network_available(void) {
+#ifdef DANEDESK_TESTING
+    const char *forced = g_getenv("DANEDESK_TEST_NETWORK");
+    if (g_strcmp0(forced, "online") == 0) return TRUE;
+    if (g_strcmp0(forced, "offline") == 0) return FALSE;
+#endif
     GNetworkMonitor *monitor = g_network_monitor_get_default();
     return monitor && g_network_monitor_get_network_available(monitor);
 }
@@ -343,14 +348,22 @@ static GtkWidget *install_page(Oobe *o) { GtkWidget *box = base_page(o, "install
 
 static gboolean network_connected(Oobe *o) { return network_available() || (o->network_ssid && o->network_ssid[0]); }
 static gboolean valid_user(Oobe *o) { const char *u = gtk_editable_get_text(GTK_EDITABLE(o->username)); const char *p = gtk_editable_get_text(GTK_EDITABLE(o->password)); return u && strlen(u) >= 2 && p && strlen(p) >= 8; }
+static const char *danedesk_client_path(void) {
+#ifdef DANEDESK_TESTING
+    const char *candidate = g_getenv("DANEDESK_CLIENT_BIN");
+    if (candidate && g_path_is_absolute(candidate)) return candidate;
+#endif
+    return "/usr/local/bin/danedesk-client";
+}
 static gboolean danedesk_recovery_required(void) {
     const char *server = g_getenv("DANEDESK_SERVER");
-    if (!server || !*server || !g_file_test("/usr/local/bin/danedesk-client", G_FILE_TEST_IS_EXECUTABLE)) return FALSE;
+    const char *client = danedesk_client_path();
+    if (!server || !*server || !g_file_test(client, G_FILE_TEST_IS_EXECUTABLE)) return FALSE;
     gchar *stdout_text = NULL;
     gchar *stderr_text = NULL;
     gint status = 1;
     GError *error = NULL;
-    gchar *argv[] = {"/usr/local/bin/danedesk-client", "check-status", "--server", (gchar *)server, NULL};
+    gchar *argv[] = {(gchar *)client, "check-status", "--server", (gchar *)server, NULL};
     gboolean ran = g_spawn_sync(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &stdout_text, &stderr_text, &status, &error);
     if (error) g_error_free(error);
     gboolean required = ran && status == 0 && stdout_text && strstr(stdout_text, "\"recoveryRequired\": true");
@@ -369,10 +382,23 @@ static void show_danedesk_recovery(Oobe *o) {
     gtk_editable_set_text(GTK_EDITABLE(o->recovery_otp), "");
     gtk_label_set_text(GTK_LABEL(o->recovery_result), "Introduce el OTP de seis dígitos emitido por el propietario autenticado en Foundstore.");
 }
+static gboolean danedesk_installation_allowed(Oobe *o) {
+    const char *server = g_getenv("DANEDESK_SERVER");
+    if (!server || !*server) return TRUE;
+    if (!network_connected(o)) {
+        gtk_label_set_text(GTK_LABEL(o->status), "Conecta a internet para verificar el estado recuperable de este DaneDesk antes de instalar.");
+        return FALSE;
+    }
+    if (danedesk_recovery_required()) {
+        show_danedesk_recovery(o);
+        return FALSE;
+    }
+    return TRUE;
+}
 static void recovery_otp_clicked(GtkButton *button, gpointer data) {
     (void)button; Oobe *o = data; const char *otp = gtk_editable_get_text(GTK_EDITABLE(o->recovery_otp));
     if (!otp || strlen(otp) != 6 || strspn(otp, "0123456789") != 6) { gtk_label_set_text(GTK_LABEL(o->recovery_result), "El OTP debe contener seis dígitos."); return; }
-    gchar *argv[] = {"/usr/local/bin/danedesk-client", "recover", "--otp", (gchar *)otp, NULL};
+    gchar *argv[] = {(gchar *)danedesk_client_path(), "recover", "--otp", (gchar *)otp, NULL};
     GError *error = NULL; gint status = 1; gboolean ran = g_spawn_sync(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL, &status, &error);
     if (error) g_error_free(error);
     if (!ran || status != 0) { gtk_label_set_text(GTK_LABEL(o->recovery_result), "No se pudo validar el OTP. Comprueba el código y la conexión."); return; }
@@ -392,7 +418,7 @@ static void update_summary(Oobe *o) { const char *edition = EDITION_CODES[select
 static void set_page(Oobe *o, int page) { o->page = CLAMP(page, 0, PAGE_COUNT - 1); const char *names[] = {"welcome", "language", "license", "edition", "storage", "network", "fluthin", "debian", "user", "appearance", "notch", "privacy", "emoji", "summary", "install"}; const char *status[] = {"oobe_status", "network_connect", "edition_body", "edition_body", "storage_safe", "network_connect", "fluthin_body", "debian_body", "user_body", "appearance_body", "notch_body", "privacy_body", "emoji_body", "summary_body", "install_body"}; gtk_widget_set_visible(o->recovery_panel, FALSE); gtk_widget_set_visible(o->stack, TRUE); gtk_stack_set_visible_child_name(GTK_STACK(o->stack), names[o->page]); gtk_label_set_text(GTK_LABEL(o->stage), g_strdup_printf("%s %d de %d", tr(o, "step"), o->page + 1, PAGE_COUNT)); gtk_label_set_text(GTK_LABEL(o->status), tr(o, status[o->page])); gtk_widget_set_visible(o->back, o->page > 0 && o->page < PAGE_COUNT - 1); gtk_widget_set_visible(o->next, TRUE); gtk_button_set_label(GTK_BUTTON(o->next), o->page == PAGE_COUNT - 1 ? tr(o, "finish") : tr(o, "next")); if (o->page == 1) scan_networks(o); if (o->page == 13) update_summary(o); refresh_next_sensitivity(o); }
 
 static void connect_selected_network(Oobe *o) { if (!o->network_ssid || !o->network_ssid[0]) return; const char *password = gtk_editable_get_text(GTK_EDITABLE(o->network_password)); gchar *argv[] = {"nmcli", "dev", "wifi", "connect", o->network_ssid, "password", (char *)password, NULL}; GError *error = NULL; GSubprocess *process = g_subprocess_newv((const gchar *const *)argv, G_SUBPROCESS_FLAGS_NONE, &error); if (process) { g_subprocess_wait_check(process, NULL, NULL); g_object_unref(process); } if (error) g_error_free(error); }
-static void next_clicked(GtkButton *button, gpointer data) { (void)button; Oobe *o = data; if (o->page < PAGE_COUNT - 1) { if (!validate_page(o)) return; if (o->page == 5) connect_selected_network(o); if (o->page == 13) { const char *danedesk_server = g_getenv("DANEDESK_SERVER"); if (danedesk_server && *danedesk_server) { if (!network_connected(o)) { gtk_label_set_text(GTK_LABEL(o->status), "Conecta a internet para verificar el estado recuperable de este DaneDesk antes de instalar."); return; } if (danedesk_recovery_required()) { show_danedesk_recovery(o); return; } } save_preferences(o); } set_page(o, o->page + 1); } else { save_preferences(o); GError *error = NULL; gint status = 1; if (g_file_test("/usr/local/bin/influent-oobe-apply-selection", G_FILE_TEST_IS_EXECUTABLE)) g_spawn_command_line_sync("/usr/local/bin/influent-oobe-apply-selection", NULL, NULL, &status, &error); if (error) g_error_free(error); if (g_file_test("/usr/local/bin/influent-oem-id", G_FILE_TEST_IS_EXECUTABLE)) g_spawn_command_line_sync("/usr/local/bin/influent-oem-id --refresh", NULL, NULL, &status, &error); if (error) g_error_free(error); gtk_widget_set_visible(o->content, FALSE); gtk_widget_set_visible(o->notch, FALSE); gtk_widget_set_visible(o->final_splash, TRUE); o->final_timer = g_timeout_add(40, final_step, o->final_progress); } }
+static void next_clicked(GtkButton *button, gpointer data) { (void)button; Oobe *o = data; if (o->page < PAGE_COUNT - 1) { if (!validate_page(o)) return; if (o->page == 5) connect_selected_network(o); if (o->page == 13) { if (!danedesk_installation_allowed(o)) return; save_preferences(o); } set_page(o, o->page + 1); } else { save_preferences(o); GError *error = NULL; gint status = 1; if (g_file_test("/usr/local/bin/influent-oobe-apply-selection", G_FILE_TEST_IS_EXECUTABLE)) g_spawn_command_line_sync("/usr/local/bin/influent-oobe-apply-selection", NULL, NULL, &status, &error); if (error) g_error_free(error); if (g_file_test("/usr/local/bin/influent-oem-id", G_FILE_TEST_IS_EXECUTABLE)) g_spawn_command_line_sync("/usr/local/bin/influent-oem-id --refresh", NULL, NULL, &status, &error); if (error) g_error_free(error); gtk_widget_set_visible(o->content, FALSE); gtk_widget_set_visible(o->notch, FALSE); gtk_widget_set_visible(o->final_splash, TRUE); o->final_timer = g_timeout_add(40, final_step, o->final_progress); } }
 static void back_clicked(GtkButton *button, gpointer data) { (void)button; Oobe *o = data; if (o->page > 0) set_page(o, o->page - 1); }
 static void language_changed(GtkDropDown *dropdown, GParamSpec *pspec, gpointer data) { (void)dropdown; (void)pspec; Oobe *o = data; g_free(o->language); o->language = g_strdup(selected_language(o)); load_runtime_locale(o); apply_language(o); save_preferences(o); refresh_next_sensitivity(o); }
 static void theme_changed(GtkCheckButton *button, gpointer data) { Oobe *o = data; if (gtk_check_button_get_active(button)) { if (button == GTK_CHECK_BUTTON(o->theme_dark)) gtk_widget_add_css_class(o->root, "dark"); else gtk_widget_remove_css_class(o->root, "dark"); update_accent_css(o); save_preferences(o); } }

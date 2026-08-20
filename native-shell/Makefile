@@ -9,6 +9,11 @@ GTK4_LAYER_LIBS := $(shell PKG_CONFIG_PATH=$(GTK4_LAYER_PKG_PATH) pkg-config --l
 
 all: influent-danenone-shell influent-danenone-tour influent-danenone-start influent-danenone-firstboot influent-danenone-splashboot influent-danenone-desktop-gtk4
 
+test-danedesk-oobe: test_danedesk_oobe_recovery.c first_boot_setup_gtk4.c
+	$(CC) -O2 -Wall -Wextra -Wpedantic $(GTK4_CFLAGS) -o .danedesk-oobe-recovery-test test_danedesk_oobe_recovery.c $(GTK4_LIBS)
+	xvfb-run -a env GTK_A11Y=none ./.danedesk-oobe-recovery-test
+	rm -f .danedesk-oobe-recovery-test
+
 influent-danenone-shell: main.c window_visuals.c window_visuals.h
 	$(CC) $(CFLAGS) -o $@ main.c window_visuals.c $(LDLIBS)
 
