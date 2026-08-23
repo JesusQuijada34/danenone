@@ -7,6 +7,7 @@ CONFIG = ROOT / "packaging" / "calamares-config"
 PLASMA_PACKAGES = ROOT / "packages" / "editions" / "plasma.packages"
 VM_PROTOCOL = ROOT / "docs" / "calamares-disposable-vm-validation.md"
 EXEC_RESEARCH = ROOT / "docs" / "calamares-exec-module-research.md"
+RUNTIME_PACKAGE = ROOT / "packaging" / "calamares" / "PKGBUILD"
 
 
 class CalamaresConfigTemplateTests(unittest.TestCase):
@@ -35,6 +36,15 @@ class CalamaresConfigTemplateTests(unittest.TestCase):
         package = (CONFIG / "PKGBUILD").read_text(encoding="utf-8")
         self.assertIn("/usr/share/danenone/calamares-template/etc/calamares", package)
         self.assertNotIn('"$pkgdir/etc/calamares', package)
+
+    def test_runtime_and_template_coexist_only_as_nonactivated_packages(self):
+        template = (CONFIG / "PKGBUILD").read_text(encoding="utf-8")
+        runtime = RUNTIME_PACKAGE.read_text(encoding="utf-8")
+        self.assertIn("'danenone-calamares'", template)
+        self.assertIn("-DINSTALL_CONFIG=OFF", runtime)
+        self.assertIn("/usr/share/danenone/calamares-template/etc/calamares", template)
+        self.assertNotIn('"$pkgdir/etc/calamares', template)
+        self.assertNotIn("/etc/calamares", runtime)
 
     def test_branding_is_local_and_original(self):
         branding = (CONFIG / "branding.desc").read_text(encoding="utf-8")
@@ -67,6 +77,8 @@ class CalamaresConfigTemplateTests(unittest.TestCase):
         self.assertIn("sin `--skippgpcheck`", protocol)
         self.assertIn("`exec: []`", protocol)
         self.assertIn("`QT_QPA_PLATFORM=offscreen`", protocol)
+        self.assertIn("root temporal", protocol)
+        self.assertIn("`/etc/calamares`", protocol)
 
     def test_execution_contract_is_documentary_until_vm_preconditions_exist(self):
         research = EXEC_RESEARCH.read_text(encoding="utf-8")
