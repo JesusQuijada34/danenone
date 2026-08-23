@@ -8,7 +8,7 @@ El PKGBUILD fija la release oficial `3.4.2`, su SHA-256 publicado y la huella de
 
 La receta se compiló correctamente en un chroot Arch de prueba como `danenone-calamares 3.4.2-2`. El paquete resultante contiene el ejecutable, la política Polkit y los recursos de branding de ejemplo, y no fue instalado ni añadido a la edición Plasma RC1. Durante esta validación se incorporó `qt6-tools` como dependencia de construcción porque `Qt6LinguistTools` es requerido por el CMake de Calamares.
 
-El tarball se comprobó frente al SHA-256 publicado. La verificación PGP sigue siendo una condición de bloqueo para distribuir o integrar el paquete: el servidor de claves usado durante la prueba no devolvió una clave utilizable con la huella publicada. No se debe suprimir `validpgpkeys` ni aceptar un paquete de producción hasta obtener y verificar la clave por una fuente de confianza.
+El tarball se comprobó frente al SHA-256 publicado. La firma PGP también fue validada en un anillo temporal: la clave se descargó desde el sitio personal publicado por el firmante, su huella primaria se contrastó con la actualización GPG de KDE y la firma del tarball verificó correctamente con el subkey `6D0837841C068A233F24127B14B6CC381BC256D6`. [3] [4]
 
 ## Revisión obligatoria antes de compilar
 
@@ -26,3 +26,5 @@ No se ejecuta `deploycala.py`, ya que la guía oficial indica que ese script esc
 
 [1]: https://codeberg.org/Calamares/calamares/releases/tag/v3.4.2 "Calamares 3.4.2 release"
 [2]: https://calamares.codeberg.page/docs/develop-guide "Calamares Deployer's Guide"
+[3]: https://euroquis.nl/about/ "Adriaan de Groot — clave pública"
+[4]: https://planet.kde.org/adriaan-de-groot-2026-02-02-gpg-update-2026/ "GPG Update 2026"
