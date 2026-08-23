@@ -21,11 +21,6 @@ foreground=f2f6ff
 EOF
 chown -R danenone:danenone /home/danenone
 systemctl enable NetworkManager.service || true
-install -d -m 0750 /etc/sudoers.d
-cat > /etc/sudoers.d/influent-firstboot <<'EOF'
-danenone ALL=(root) NOPASSWD: /usr/bin/useradd, /usr/bin/chpasswd, /usr/bin/sed, /usr/bin/id
-EOF
-chmod 0440 /etc/sudoers.d/influent-firstboot
 systemctl enable influent-oem-id.service || true
 systemctl enable greetd.service || true
 

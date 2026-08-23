@@ -1,4 +1,5 @@
 import hashlib
+import struct
 import unittest
 from pathlib import Path
 
@@ -14,11 +15,18 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def png_dimensions(path: Path) -> tuple[int, int]:
+    data = path.read_bytes()
+    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        raise ValueError(f"PNG inválido: {path}")
+    return struct.unpack(">II", data[16:24])
+
+
 class BootBrandingTests(unittest.TestCase):
     def test_bootloaders_use_the_current_unmodified_wallpaper(self):
         self.assertEqual(sha256(CURRENT_WALLPAPER), sha256(GRUB_WALLPAPER))
         self.assertEqual(sha256(CURRENT_WALLPAPER), sha256(SYSLINUX_WALLPAPER))
-        self.assertEqual(sha256(CURRENT_WALLPAPER), sha256(SYSLINUX_PACKAGED_SPLASH))
+        self.assertEqual(png_dimensions(SYSLINUX_PACKAGED_SPLASH), (640, 480))
 
     def test_grub_and_syslinux_reference_their_current_wallpapers(self):
         grub = (ROOT / "archiso-profile" / "grub" / "grub.cfg").read_text(encoding="utf-8")

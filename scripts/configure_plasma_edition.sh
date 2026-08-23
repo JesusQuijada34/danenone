@@ -23,6 +23,10 @@ sed -i -E '/^greetd$/d' "$PROFILE/packages.x86_64"
 rm -f "$ROOTFS/etc/greetd/config.toml"
 rm -f "$ROOTFS/etc/systemd/system/getty@tty1.service.d/autologin.conf"
 
+# El perfil base habilita greetd. En Plasma el paquete ya no está presente;
+# eliminar esa línea evita errores de unidades inexistentes en mkarchiso.
+sed -i -E '/^systemctl enable greetd\.service \|\| true$/d' "$ROOTFS/root/customize_airootfs.sh"
+
 install -d -m 0755 "$ROOTFS/etc/sddm.conf.d" "$ROOTFS/var/lib/sddm" "$ROOTFS/etc/influent-danenone"
 cat > "$ROOTFS/etc/sddm.conf.d/10-influent-danenone.conf" <<'EOF'
 [Theme]
@@ -44,11 +48,21 @@ DEFAULT_SESSION=plasma.desktop
 ADVANCED_SESSION=hyprland.desktop
 EOF
 
-# El script base habilita greetd. Añadimos la transición al final para que el
-# resultado sea inequívoco durante la construcción del sistema live.
+cat > "$ROOTFS/etc/motd" <<'EOF'
+Influent Danenone Plasma — entorno live
+
+Conectividad: NetworkManager
+Escritorio predeterminado: KDE Plasma / KWin
+Sesión avanzada disponible: Hyprland
+Asistente: configuración inicial Danenone
+
+Consulta la documentación del proyecto en:
+https://github.com/JesusQuijada34/danenone
+EOF
+
+# La edición Plasma habilita sólo SDDM durante la construcción del sistema live.
 cat >> "$ROOTFS/root/customize_airootfs.sh" <<'EOF'
 
 # La edición Plasma usa SDDM; Hyprland queda como sesión avanzada del selector.
-systemctl disable greetd.service || true
 systemctl enable sddm.service || true
 EOF
