@@ -1,6 +1,6 @@
 pkgname=danenone-calamares
 pkgver=3.4.2
-pkgrel=1
+pkgrel=2
 pkgdesc='Calamares Qt6 installer runtime for a future Influent Danenone edition'
 arch=('x86_64')
 url='https://calamares.io/'
@@ -19,6 +19,7 @@ makedepends=(
   'extra-cmake-modules'
   'ninja'
   'python'
+  'qt6-tools'
 )
 provides=('calamares')
 conflicts=('calamares')

@@ -21,6 +21,7 @@ class CalamaresPackagingTests(unittest.TestCase):
         self.assertIn("-DWITH_QML=ON", package)
         self.assertIn("-DUSE_services=systemd", package)
         self.assertIn("-DINSTALL_CONFIG=OFF", package)
+        self.assertIn("'qt6-tools'", package)
         self.assertNotRegex(package, re.compile(r"packages/editions/plasma\.packages"))
 
 
