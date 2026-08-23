@@ -1,0 +1,16 @@
+# Influent Danenone Plasma: sesión predeterminada y sesión avanzada.
+plasma-meta
+kwin
+sddm
+xdg-desktop-portal
+xdg-desktop-portal-kde
+plasma-nm
+plasma-pa
+powerdevil
+polkit-kde-agent
+breeze-gtk
+kde-gtk-config
+# Hyprland se conserva desde el perfil base como sesión Wayland avanzada.
+hyprland
+hyprpaper
+xdg-desktop-portal-hyprland
