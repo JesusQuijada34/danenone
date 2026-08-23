@@ -24,6 +24,30 @@ La persona que ejecute la prueba debe crear una carpeta temporal nueva, dentro d
 
 La futura ISO de laboratorio debe incorporar el runtime y una copia explícita de una configuración **completa** bajo `/etc/calamares`. La copia sólo se permite cuando los módulos ejecutores tengan sus configuraciones versionadas, revisadas y probadas. El handoff de OOBE puede proponer únicamente `SELECTED_LANGUAGE` y `SELECTED_EDITION`; Calamares debe pedir y confirmar el disco, el modo de particionado y la contraseña dentro de su propia interfaz. [1]
 
+### Validador de precondiciones de laboratorio
+
+Un futuro script `scripts/validate_calamares_lab.py` validará únicamente argumentos y rutas; no ejecutará QEMU, Calamares, `pacman`, operaciones de particionado ni cambios de archivos. Deberá aceptar un directorio de trabajo explícito, una ISO de laboratorio existente dentro de ese directorio, uno o más discos virtuales `qcow2` existentes dentro del mismo árbol y el SHA-256 esperado de la ISO.
+
+| Entrada | Aceptación | Rechazo obligatorio |
+| --- | --- | --- |
+| Directorio de trabajo | Ruta existente, canónica y controlada para pruebas. | Ruta relativa, inexistente o fuera del espacio de pruebas indicado. |
+| ISO | Archivo `.iso` regular bajo el directorio de trabajo, con SHA-256 esperado coincidente. | La RC1 `v0.5.0-plasma-rc1`, su SHA-256 conocido, un enlace fuera del árbol o un checksum distinto. |
+| Disco | Uno o más archivos `.qcow2` regulares bajo el directorio de trabajo. | `/dev/*`, una ruta que escape el árbol, extensión distinta o archivo inexistente. |
+
+La salida permitida es un resumen de las rutas validadas y del checksum observado. El validador nunca construye medios, no crea discos y no inicia la matriz de instalación descrita después.
+
+Cuando exista una ISO de laboratorio y sus discos ya creados, la comprobación se ejecutará de forma explícita, por ejemplo:
+
+```bash
+python3 scripts/validate_calamares_lab.py \
+  --workspace /ruta/aislada/de/laboratorio \
+  --iso /ruta/aislada/de/laboratorio/influent-danenone-calamares-lab.iso \
+  --disk /ruta/aislada/de/laboratorio/target.qcow2 \
+  --expect-iso-sha256 <sha256-registrado-de-la-iso>
+```
+
+El código de salida `0` sólo confirma la precondición de rutas y checksum. No es una autorización para ejecutar QEMU, copiar la plantilla a `/etc/calamares`, instalar en discos reales ni publicar una ISO. Cualquier resultado distinto de `0` debe bloquear la prueba posterior y corregirse antes de volver a evaluar las entradas.
+
 | Comprobación previa | Resultado obligatorio | Motivo de detención |
 | --- | --- | --- |
 | Integridad del runtime | Checksum y firma PGP válidos dentro del flujo de `makepkg`. | No existe una firma confiada o se usó una omisión de firma. |
