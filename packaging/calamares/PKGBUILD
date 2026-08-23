@@ -1,0 +1,56 @@
+pkgname=danenone-calamares
+pkgver=3.4.2
+pkgrel=1
+pkgdesc='Calamares Qt6 installer runtime for a future Influent Danenone edition'
+arch=('x86_64')
+url='https://calamares.io/'
+license=('BSD-2-Clause' 'GPL-3.0-or-later')
+depends=(
+  'kcoreaddons'
+  'kpmcore'
+  'polkit-qt6'
+  'qt6-base'
+  'qt6-declarative'
+  'qt6-svg'
+  'yaml-cpp'
+)
+makedepends=(
+  'cmake'
+  'extra-cmake-modules'
+  'ninja'
+  'python'
+)
+provides=('calamares')
+conflicts=('calamares')
+source=(
+  "https://codeberg.org/Calamares/calamares/releases/download/v${pkgver}/calamares-${pkgver}.tar.gz"
+  "https://codeberg.org/Calamares/calamares/releases/download/v${pkgver}/calamares-${pkgver}.tar.gz.asc"
+)
+sha256sums=(
+  '733bbbb00dc9f84874bd5c22960952f317ea2537565431179fa2152b2fbfdccc'
+  'SKIP'
+)
+validpgpkeys=('6D0837841C068A233F24127B14B6CC381BC256D6')
+
+build() {
+  cmake -S "calamares-${pkgver}" -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DWITH_QT6=ON \
+    -DWITH_QML=ON \
+    -DWITH_PYTHON=ON \
+    -DUSE_services=systemd \
+    -DINSTALL_CONFIG=OFF \
+    -DINSTALL_POLKIT=ON
+  cmake --build build
+}
+
+check() {
+  ctest --test-dir build --output-on-failure
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dm644 "calamares-${pkgver}/LICENSES/BSD-2-Clause.txt" \
+    "$pkgdir/usr/share/licenses/${pkgname}/BSD-2-Clause.txt"
+}
