@@ -4,6 +4,12 @@ Este directorio prepara una fuente **reproducible y aislada** de Calamares para 
 
 El PKGBUILD fija la release oficial `3.4.2`, su SHA-256 publicado y la huella de firma indicada en la release de Calamares. La construcción selecciona Qt6, QML y systemd, pero deja `INSTALL_CONFIG=OFF`: la configuración y el branding de Danenone deben distribuirse como un paquete separado bajo `/etc/calamares`, tal como recomienda la documentación del proyecto. [1] [2]
 
+## Estado de validación aislada
+
+La receta se compiló correctamente en un chroot Arch de prueba como `danenone-calamares 3.4.2-2`. El paquete resultante contiene el ejecutable, la política Polkit y los recursos de branding de ejemplo, y no fue instalado ni añadido a la edición Plasma RC1. Durante esta validación se incorporó `qt6-tools` como dependencia de construcción porque `Qt6LinguistTools` es requerido por el CMake de Calamares.
+
+El tarball se comprobó frente al SHA-256 publicado. La verificación PGP sigue siendo una condición de bloqueo para distribuir o integrar el paquete: el servidor de claves usado durante la prueba no devolvió una clave utilizable con la huella publicada. No se debe suprimir `validpgpkeys` ni aceptar un paquete de producción hasta obtener y verificar la clave por una fuente de confianza.
+
 ## Revisión obligatoria antes de compilar
 
 1. Importar y verificar la clave `6D0837841C068A233F24127B14B6CC381BC256D6` desde una fuente de confianza antes de aceptar la firma.
