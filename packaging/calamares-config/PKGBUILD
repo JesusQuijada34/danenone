@@ -1,0 +1,31 @@
+pkgname=danenone-calamares-config
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Preview-only Calamares configuration and QML branding for future Influent Danenone media'
+arch=('any')
+url='https://github.com/JesusQuijada34/danenone'
+license=('MIT')
+depends=('danenone-calamares')
+source=(
+  'settings.conf'
+  'branding.desc'
+  'show.qml'
+  'stylesheet.qss'
+  'influent-stream-wallpaper.png'
+  'influent-danenone-boot.png'
+  'README.md'
+)
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+  local template_root="$pkgdir/usr/share/danenone/calamares-template/etc/calamares"
+  local branding_root="$template_root/branding/influent-danenone"
+
+  install -Dm644 settings.conf "$template_root/settings.conf"
+  install -Dm644 branding.desc "$branding_root/branding.desc"
+  install -Dm644 show.qml "$branding_root/show.qml"
+  install -Dm644 stylesheet.qss "$branding_root/stylesheet.qss"
+  install -Dm644 influent-stream-wallpaper.png "$branding_root/influent-stream-wallpaper.png"
+  install -Dm644 influent-danenone-boot.png "$branding_root/influent-danenone-boot.png"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

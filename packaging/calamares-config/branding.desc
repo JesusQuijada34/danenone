@@ -1,0 +1,39 @@
+---
+componentName: influent-danenone
+welcomeStyleCalamares: true
+welcomeExpandingLogo: true
+windowExpanding: normal
+windowSize: 920px,620px
+windowPlacement: center
+sidebar: widget
+navigation: widget
+
+strings:
+  productName: Influent Danenone
+  shortProductName: Danenone
+  version: Plasma Edition
+  shortVersion: Plasma
+  versionedName: Influent Danenone Plasma Edition
+  shortVersionedName: Danenone Plasma
+  bootloaderEntryName: Influent Danenone
+  productUrl: ""
+  supportUrl: ""
+  knownIssuesUrl: ""
+  releaseNotesUrl: ""
+  donateUrl: ""
+
+images:
+  productIcon: influent-danenone-boot.png
+  productLogo: influent-danenone-boot.png
+  productWelcome: influent-stream-wallpaper.png
+
+style:
+  SidebarBackground: "#07392e"
+  SidebarText: "#ecfff7"
+  SidebarTextCurrent: "#062b22"
+  SidebarBackgroundCurrent: "#7ee7be"
+
+slideshow: show.qml
+slideshowAPI: 2
+uploadServer:
+  type: none

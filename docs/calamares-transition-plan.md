@@ -27,6 +27,23 @@ Cuando exista un paquete de Calamares reproducible y auditado, la edición Plasm
 
 El branding se ubicará como componente propio y el lanzador conservará el tema Plasma mediante un entorno controlado. La documentación oficial advierte que los entornos gráficos no se heredan automáticamente cuando Calamares se lanza con privilegios; esa integración debe quedar explícita y comprobada. [1]
 
+## Artefactos aislados verificados
+
+El repositorio ya contiene el paquete de runtime `danenone-calamares` y la plantilla `danenone-calamares-config`. La plantilla instala sus archivos exclusivamente bajo `/usr/share/danenone/calamares-template/etc/calamares`; no crea `/etc/calamares`, no incorpora un lanzador y no aparece en la lista de paquetes de Plasma RC1. Su `settings.conf` conserva sólo pantallas no destructivas y una etapa `exec` vacía.
+
+El slideshow QML se comprobó con `qmllint` de Qt6 sin diagnósticos. El paquete de plantilla se construyó en el chroot Arch aislado y las pruebas de estructura, empaquetado y contrato OOBE aprobaron. Estas comprobaciones demuestran que la **plantilla** es coherente y pasiva; no constituyen una prueba de instalación ni autorizan incorporar Calamares a una ISO.
+
+| Puerta de seguridad | Evidencia requerida | Estado de esta iteración |
+|---|---|---|
+| Fuente del runtime | Tarball oficial con checksum y firma verificados; clave configurada en el keyring de `makepkg`. | Checksum y firma revisados; falta integrar la confianza de la clave en una compilación de producción. |
+| Paquete de configuración | Construcción reproducible y ruta de instalación no activa. | Superada: sólo instala bajo `/usr/share/danenone/calamares-template`. |
+| Interfaz QML | Análisis estático sin errores ni avisos de alcance. | Superada con `qmllint` de Qt6. |
+| Handoff OOBE | Lista permitida de idioma/edición, permisos `0600` y exclusión de secretos. | Superada por pruebas automatizadas; la plantilla no lo consume aún. |
+| Integración en edición | Dependencias, copia explícita a `/etc/calamares`, políticas y lanzador controlados. | Pendiente y prohibida para Plasma RC1. |
+| Instalación real | Máquinas virtuales desechables con discos de prueba y recuperación comprobada. | Pendiente. |
+
+Antes de añadir dependencias o copiar la configuración a una futura edición, la compilación deberá verificar la firma PGP desde el keyring de `makepkg`, sin `--skippgpcheck`. Sólo después se implementarán módulos de ejecución específicos, confirmaciones explícitas y pruebas completas sobre discos virtuales desechables. La publicación de una nueva ISO se evaluará como una operación separada y no modifica la release candidate existente.
+
 ## Criterios antes de activar Calamares
 
 1. Empaquetar Calamares y su configuración en una fuente reproducible y auditable.

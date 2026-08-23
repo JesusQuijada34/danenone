@@ -1,0 +1,31 @@
+QWidget {
+    color: #15352b;
+    background: #f3fbf7;
+    font-family: Noto Sans, Sans Serif;
+}
+
+QPushButton {
+    background: #0d6b52;
+    border: 1px solid #07503d;
+    color: #ffffff;
+    min-height: 32px;
+    padding: 4px 14px;
+}
+
+QPushButton:hover {
+    background: #0a8060;
+}
+
+QPushButton:disabled {
+    background: #b9d8cc;
+    border-color: #a7c5ba;
+    color: #47665b;
+}
+
+QLineEdit, QComboBox, QTreeView, QListView {
+    background: #ffffff;
+    border: 1px solid #7aa995;
+    padding: 6px;
+    selection-background-color: #b7f2d7;
+    selection-color: #062b22;
+}
