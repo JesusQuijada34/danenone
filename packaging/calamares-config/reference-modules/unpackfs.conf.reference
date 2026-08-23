@@ -1,0 +1,4 @@
+# Referencia no activable. No usar la ruta de squashfs de Plasma RC1.
+# La ISO de laboratorio debe registrar su artefacto y checksum antes de
+# sustituir el listado vacío por un origen `sourcefs: squashfs` verificado.
+unpack: []

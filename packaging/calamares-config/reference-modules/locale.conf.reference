@@ -1,0 +1,8 @@
+# Referencia no activable. El idioma del OOBE sólo puede ser una sugerencia
+# editable; no se permiten solicitudes GeoIP ni telemetría.
+region: "America"
+zone: "Havana"
+geoip:
+  style: "none"
+  url: ""
+  selector: ""

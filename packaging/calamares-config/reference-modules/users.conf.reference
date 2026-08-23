@@ -1,0 +1,27 @@
+# Referencia no activable. Las credenciales se introducen dentro de Calamares
+# y no se copian desde OOBE, handoff ni ningún servicio de DaneDesk.
+defaultGroups:
+  - users
+  - wheel
+  - audio
+  - video
+  - network
+  - storage
+sudoersGroup: wheel
+setRootPassword: false
+displayAutologin: false
+doAutologin: false
+allowWeakPasswords: false
+allowWeakPasswordsDefault: false
+passwordRequirements:
+  minLength: 12
+  maxLength: 128
+user:
+  shell: /bin/bash
+  forbidden_names: [ root, nobody ]
+  home_permissions: "o700"
+hostname:
+  location: EtcFile
+  writeHostsFile: true
+  forbidden_names: [ localhost ]
+allowActiveDirectory: false

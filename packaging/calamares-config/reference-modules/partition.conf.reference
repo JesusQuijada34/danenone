@@ -1,0 +1,7 @@
+# Referencia no activable. La selección de disco y el modo destructivo se
+# recogen y confirman dentro de Calamares; nunca proceden del OOBE.
+initialPartitioningChoice: none
+initialSwapChoice: none
+defaultFileSystemType: "ext4"
+drawNestedPartitions: false
+alwaysShowPartitionLabels: true

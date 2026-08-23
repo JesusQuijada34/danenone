@@ -1,0 +1,21 @@
+reference_only: true
+activation: blocked-until-disposable-vm-validation
+show:
+  - welcome
+  - locale
+  - keyboard
+  - partition
+  - users
+  - summary
+exec:
+  - partition
+  - mount
+  - unpackfs
+  - fstab
+  - locale
+  - users
+  - displaymanager
+  - bootloader
+  - umount
+finish:
+  - finished

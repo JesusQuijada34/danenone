@@ -1,0 +1,10 @@
+# Referencia no activable. fstab consume sólo los puntos ya confirmados por
+# partition y mount; no incorpora UUID ni dispositivos externos.
+crypttabOptions: luks
+tmpOptions:
+  default:
+    tmpfs: false
+    options: ""
+  ssd:
+    tmpfs: true
+    options: "defaults,noatime,mode=1777"

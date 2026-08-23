@@ -8,6 +8,7 @@ PLASMA_PACKAGES = ROOT / "packages" / "editions" / "plasma.packages"
 VM_PROTOCOL = ROOT / "docs" / "calamares-disposable-vm-validation.md"
 EXEC_RESEARCH = ROOT / "docs" / "calamares-exec-module-research.md"
 RUNTIME_PACKAGE = ROOT / "packaging" / "calamares" / "PKGBUILD"
+REFERENCE_MODULES = CONFIG / "reference-modules"
 
 
 class CalamaresConfigTemplateTests(unittest.TestCase):
@@ -89,6 +90,41 @@ class CalamaresConfigTemplateTests(unittest.TestCase):
         self.assertIn("`shellprocess`", research)
         self.assertIn("no debe añadirse a `unpackfs.conf`", research)
         self.assertFalse((CONFIG / "modules").exists())
+
+    def test_reference_modules_are_not_packaged_or_loadable(self):
+        expected = {
+            "partition.conf.reference",
+            "mount.conf.reference",
+            "unpackfs.conf.reference",
+            "fstab.conf.reference",
+            "locale.conf.reference",
+            "users.conf.reference",
+            "displaymanager.conf.reference",
+            "bootloader.conf.reference",
+            "umount.conf.reference",
+            "execution-sequence.yaml",
+            "README.md",
+        }
+        self.assertTrue(expected.issubset({path.name for path in REFERENCE_MODULES.iterdir()}))
+        self.assertFalse((REFERENCE_MODULES / "settings.conf").exists())
+        self.assertFalse(any(REFERENCE_MODULES.glob("*.conf")))
+
+        package = (CONFIG / "PKGBUILD").read_text(encoding="utf-8")
+        self.assertNotIn("reference-modules", package)
+
+        reference_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in REFERENCE_MODULES.glob("*.reference")
+        )
+        self.assertIn("initialPartitioningChoice: none", reference_text)
+        self.assertIn("unpack: []", reference_text)
+        self.assertIn('style: "none"', reference_text)
+        self.assertIn("setRootPassword: false", reference_text)
+        self.assertIn("displaymanagers:", reference_text)
+        self.assertIn('efiBootLoader: "grub"', reference_text)
+        self.assertNotIn("shellprocess", reference_text)
+        self.assertNotIn("contextualprocess", reference_text)
+        self.assertNotIn("webview", reference_text)
 
 
 if __name__ == "__main__":

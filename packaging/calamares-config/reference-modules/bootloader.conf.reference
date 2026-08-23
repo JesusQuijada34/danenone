@@ -1,0 +1,12 @@
+# Referencia no activable. Se valida por separado en firmware BIOS y UEFI.
+efiBootLoader: "grub"
+kernelSearchPath: "/usr/lib/modules"
+kernelPattern: "^vmlinuz.*"
+grubInstall: "grub-install"
+grubMkconfig: "grub-mkconfig"
+grubCfg: "/boot/grub/grub.cfg"
+grubProbe: "grub-probe"
+efiBootMgr: "efibootmgr"
+efiBootloaderId: "Danenone"
+installEFIFallback: true
+installHybridGRUB: false

@@ -1,0 +1,9 @@
+# Referencia no activable. La ruta y el archivo de sesión de Plasma deben
+# verificarse dentro de la ISO de laboratorio antes de declarar el escritorio
+# predeterminado. Hyprland permanece como sesión alternativa, no predeterminada.
+displaymanagers:
+  - sddm
+basicSetup: false
+sysconfigSetup: false
+sddm:
+  configuration_file: "/etc/sddm.conf"

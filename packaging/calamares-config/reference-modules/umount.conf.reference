@@ -1,0 +1,3 @@
+# Referencia no activable. El desmontaje debe ejecutarse también tras un fallo
+# de módulos previos dentro de una prueba con disco qcow2.
+emergency: true

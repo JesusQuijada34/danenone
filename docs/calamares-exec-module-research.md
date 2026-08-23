@@ -36,6 +36,35 @@ El árbol de fuentes de Calamares 3.4.2 construido de manera aislada proporciona
 
 Una inspección de solo lectura de la ISO RC1 confirmó que su squashfs reside en `/influent/x86_64/airootfs.sfs` y que incluye el checksum vecino `airootfs.sha512`. Esta ruta describe exclusivamente el medio ya publicado: no debe añadirse a `unpackfs.conf`, porque la RC1 no incorpora Calamares. Cuando exista una ISO de laboratorio se tendrá que comprobar de nuevo su ruta, registrar su checksum y configurar `unpackfs` contra ese nuevo artefacto verificado.
 
+## Sintaxis contrastada para referencias aisladas
+
+Los ejemplos oficiales de `unpackfs` requieren una lista `unpack` cuyos elementos tengan `source`, `sourcefs` y `destination`; `sourcefs: squashfs` es válido, pero el origen debe ser un artefacto del medio de laboratorio. La futura referencia mantendrá ese origen como un marcador explícito no ejecutable y no reutilizará el squashfs de RC1. [3]
+
+El módulo `mount` usa únicamente `extraMounts` para recursos necesarios dentro del destino, como `proc`, `sysfs`, `/dev` y `/run`, y aplica opciones por tipo de sistema de archivos mediante `mountOptions`. No necesita ni debe contener rutas de discos elegidas fuera de la interfaz de `partition`. `fstab` parte de los puntos de montaje que ya haya establecido ese módulo y permite fijar opciones temporales sin codificar UUID ni nombres de dispositivos. [4] [5]
+
+`displaymanager` admite una lista de gestores y permite definir el escritorio predeterminado mediante las claves obligatorias `executable` y `desktopFile`. La referencia Danenone limitará la lista a `sddm`, declarará Plasma como predeterminado sólo tras comprobar los nombres de archivo instalados en la ISO de laboratorio y mantendrá `basicSetup: false`. [6] Para `users`, se conservarán las claves de grupos, cuenta root, autologin, requisitos de contraseña y nombres prohibidos, pero las contraseñas seguirán siendo valores recolectados exclusivamente por Calamares y nunca aparecerán en archivos de referencia. [7]
+
+El ejemplo de `bootloader` admite `efiBootLoader: "grub"`, rutas de los ejecutables GRUB, `efiBootloaderId`, `installEFIFallback` e `installHybridGRUB`. Los valores definitivos no se fijarán hasta validar una ISO de laboratorio con firmware BIOS y UEFI separados. [8] El ejemplo de `locale` habilita GeoIP por defecto, por lo que la referencia Danenone lo desactivará de manera explícita y elegirá una zona inicial local sin efectuar solicitudes de red. [9]
+
+## Diseño de referencias no activables
+
+Las referencias se colocarán en `packaging/calamares-config/reference-modules/`. Sus ficheros usarán el sufijo `.conf.reference`, no el nombre que Calamares busca en `/etc/calamares/modules`, y el paquete `danenone-calamares-config` no los copiará bajo `/usr/share/danenone/calamares-template`. Por tanto, instalar el paquete no crea archivos de módulo ejecutables ni una secuencia `exec` nueva.
+
+| Referencia | Decisión de diseño | Barrera antes de activarla |
+| --- | --- | --- |
+| `unpackfs.conf.reference` | Sólo contendrá una asignación comentada y un `unpack: []` activo. | Sustituir el origen por el squashfs de una ISO de laboratorio y validar su checksum. |
+| `mount.conf.reference` y `fstab.conf.reference` | Declararán puntos de montaje estándar y opciones sin UUID ni discos. | Confirmar el mapa de `partition` en un `qcow2`. |
+| `locale.conf.reference` | Desactivará GeoIP y no declarará URL de red. | Verificar locales disponibles en la ISO de laboratorio. |
+| `users.conf.reference` | Usará nombre de cuenta, grupos y política de contraseña; no contiene secretos. | Verificar usuarios/grupos reales del destino y completar el flujo en Calamares. |
+| `displaymanager.conf.reference` | Restringirá el gestor a SDDM y mantendrá Plasma como candidato predeterminado. | Confirmar binario y archivo `.desktop` después de instalar en VM. |
+| `bootloader.conf.reference` | Limitado a GRUB y rutas Arch conocidas, sin tocar el medio live. | Validar BIOS y UEFI en discos virtuales. |
+
+No se creará un `settings.conf` ejecutable de referencia. El orden futuro se describe en `execution-sequence.yaml`, que no es un nombre de configuración consumido por Calamares. La transición a archivos `settings.conf` y `modules/*.conf` reales queda bloqueada por el protocolo de VM, el validador de preflight y pruebas de instalación satisfactorias.
+
+## Estado validado de las referencias
+
+Las referencias se revisaron con pruebas automatizadas que exigen el sufijo `.conf.reference`, rechazan cualquier `settings.conf` dentro del árbol y comprueban la ausencia de `shellprocess`, `contextualprocess` y `webview`. El paquete `danenone-calamares-config` se reconstruyó de forma aislada e inspeccionó con `pacman -Qlp`: no contiene `reference-modules`, sólo la plantilla pasiva bajo `/usr/share/danenone/calamares-template/etc/calamares`. Por ello, este hito no instala módulos ejecutables ni modifica la ISO Plasma RC1.
+
 ## Próximo paso seguro
 
 Antes de crear una configuración ejecutora aislada se debe describir el layout exacto de la ISO de laboratorio, el origen de la copia y los comandos de GRUB disponibles dentro del destino. Hasta que esas precondiciones estén verificadas, los módulos permanecen en este contrato documental y la plantilla pasiva no cambia.
@@ -44,3 +73,10 @@ Antes de crear una configuración ejecutora aislada se debe describir el layout 
 
 [1]: https://calamares.codeberg.page/docs/deploy-configuration/ "Calamares — Configuration"
 [2]: https://github.com/calamares/calamares/blob/calamares/src/modules/README.md "Calamares modules documentation"
+[3]: https://raw.githubusercontent.com/calamares/calamares/master/src/modules/unpackfs/unpackfs.conf "Calamares unpackfs.conf"
+[4]: https://raw.githubusercontent.com/calamares/calamares/master/src/modules/mount/mount.conf "Calamares mount.conf"
+[5]: https://raw.githubusercontent.com/calamares/calamares/master/src/modules/fstab/fstab.conf "Calamares fstab.conf"
+[6]: https://raw.githubusercontent.com/calamares/calamares/master/src/modules/displaymanager/displaymanager.conf "Calamares displaymanager.conf"
+[7]: https://raw.githubusercontent.com/calamares/calamares/master/src/modules/users/users.conf "Calamares users.conf"
+[8]: https://raw.githubusercontent.com/calamares/calamares/master/src/modules/bootloader/bootloader.conf "Calamares bootloader.conf"
+[9]: https://raw.githubusercontent.com/calamares/calamares/master/src/modules/locale/locale.conf "Calamares locale.conf"
