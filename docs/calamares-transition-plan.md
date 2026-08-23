@@ -44,6 +44,8 @@ El slideshow QML se comprobó con `qmllint` de Qt6 sin diagnósticos. El paquete
 
 Antes de añadir dependencias o copiar la configuración a una futura edición, la compilación deberá verificar la firma PGP desde el keyring de `makepkg`, sin `--skippgpcheck`. Sólo después se implementarán módulos de ejecución específicos, confirmaciones explícitas y pruebas completas sobre discos virtuales desechables. La publicación de una nueva ISO se evaluará como una operación separada y no modifica la release candidate existente.
 
+El procedimiento de aislamiento, la matriz de pruebas y la evidencia mínima se detallan en [el protocolo de validación en VM desechable](calamares-disposable-vm-validation.md).
+
 ## Criterios antes de activar Calamares
 
 1. Empaquetar Calamares y su configuración en una fuente reproducible y auditable.

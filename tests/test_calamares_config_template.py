@@ -4,6 +4,8 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "packaging" / "calamares-config"
+PLASMA_PACKAGES = ROOT / "packages" / "editions" / "plasma.packages"
+VM_PROTOCOL = ROOT / "docs" / "calamares-disposable-vm-validation.md"
 
 
 class CalamaresConfigTemplateTests(unittest.TestCase):
@@ -50,6 +52,20 @@ class CalamaresConfigTemplateTests(unittest.TestCase):
         self.assertIn("No debe aceptar", readme)
         self.assertIn("contraseñas", readme)
         self.assertIn("identificadores de disco", readme)
+
+    def test_plasma_profile_does_not_activate_calamares(self):
+        packages = PLASMA_PACKAGES.read_text(encoding="utf-8")
+        self.assertNotIn("calamares", packages.lower())
+
+    def test_vm_protocol_requires_disposable_qcow2_and_no_host_disks(self):
+        protocol = VM_PROTOCOL.read_text(encoding="utf-8")
+        self.assertIn("`qcow2`", protocol)
+        self.assertIn("/dev/sd*", protocol)
+        self.assertIn("/dev/nvme*", protocol)
+        self.assertIn("distinta de `v0.5.0-plasma-rc1`", protocol)
+        self.assertIn("sin `--skippgpcheck`", protocol)
+        self.assertIn("`exec: []`", protocol)
+        self.assertIn("`QT_QPA_PLATFORM=offscreen`", protocol)
 
 
 if __name__ == "__main__":
