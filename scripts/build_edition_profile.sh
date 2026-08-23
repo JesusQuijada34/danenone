@@ -31,5 +31,6 @@ cat "$PACKAGE_FILE" >> "$OUTPUT/packages.x86_64"
 install -Dm644 "$ROOT/editions/$EDITION.conf" "$OUTPUT/airootfs/etc/influent-danenone/edition.conf"
 install -Dm644 "$PACKAGE_FILE" "$OUTPUT/airootfs/etc/influent-danenone/packages.list"
 printf '%s\n' "EDITION_PROFILE=$EDITION" > "$OUTPUT/airootfs/etc/influent-danenone/profile-generated"
+"$ROOT/scripts/prepare_archiso_foundstore_release.sh" "$OUTPUT"
 printf 'Perfil preparado: %s\nSalida: %s\n' "$EDITION" "$OUTPUT"
 printf 'No se ejecuta mkarchiso automáticamente; la compilación requiere un entorno Arch con los paquetes disponibles.\n'
