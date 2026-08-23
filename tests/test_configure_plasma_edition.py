@@ -16,6 +16,7 @@ class ConfigurePlasmaEditionTests(unittest.TestCase):
         (profile / "airootfs" / "etc" / "systemd" / "system" / "getty@tty1.service.d").mkdir(parents=True)
         (profile / "airootfs" / "root").mkdir(parents=True)
         (profile / "packages.x86_64").write_text("base\ngreetd\nhyprland\n", encoding="utf-8")
+        (profile / "profiledef.sh").write_text('iso_name="influent-danenone"\niso_application="Influent Danenone"\niso_version="0.4.2"\n', encoding="utf-8")
         (profile / "airootfs" / "etc" / "greetd" / "config.toml").write_text("[default_session]\n", encoding="utf-8")
         (profile / "airootfs" / "etc" / "systemd" / "system" / "getty@tty1.service.d" / "autologin.conf").write_text("[Service]\n", encoding="utf-8")
         (profile / "airootfs" / "root" / "customize_airootfs.sh").write_text("#!/usr/bin/env bash\nsystemctl enable greetd.service || true\n", encoding="utf-8")
@@ -27,6 +28,7 @@ class ConfigurePlasmaEditionTests(unittest.TestCase):
             subprocess.run([str(CONFIGURATOR), str(profile)], check=True)
 
             packages = (profile / "packages.x86_64").read_text(encoding="utf-8")
+            profiledef = (profile / "profiledef.sh").read_text(encoding="utf-8")
             self.assertNotIn("greetd\n", packages)
             self.assertIn("hyprland\n", packages)
             self.assertFalse((profile / "airootfs" / "etc" / "greetd" / "config.toml").exists())
@@ -43,6 +45,8 @@ class ConfigurePlasmaEditionTests(unittest.TestCase):
             self.assertIn("ADVANCED_SESSION=hyprland.desktop", policy)
             self.assertIn("systemctl disable greetd.service", customize)
             self.assertIn("systemctl enable sddm.service", customize)
+            self.assertIn('iso_name="influent-danenone-plasma"', profiledef)
+            self.assertIn('iso_version="0.5.0-rc1"', profiledef)
 
     def test_rejects_profile_without_archiso_structure(self):
         with tempfile.TemporaryDirectory() as directory:

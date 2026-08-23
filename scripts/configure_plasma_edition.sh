@@ -9,6 +9,14 @@ fi
 
 ROOTFS="$PROFILE/airootfs"
 
+# La variante Plasma tiene un nombre y versión propios para producir un asset
+# independiente de la RC basada en Hyprland.
+sed -i -E \
+  -e 's/^iso_name=".*"$/iso_name="influent-danenone-plasma"/' \
+  -e 's/^iso_application=".*"$/iso_application="Influent Danenone Plasma — KDE Plasma + Hyprland avanzado"/' \
+  -e 's/^iso_version=".*"$/iso_version="0.5.0-rc1"/' \
+  "$PROFILE/profiledef.sh"
+
 # El perfil Plasma sustituye el inicio directo por greetd, pero mantiene el
 # paquete y la configuración de Hyprland como una sesión avanzada elegible.
 sed -i -E '/^greetd$/d' "$PROFILE/packages.x86_64"
