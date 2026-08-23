@@ -6,6 +6,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "packaging" / "calamares-config"
 PLASMA_PACKAGES = ROOT / "packages" / "editions" / "plasma.packages"
 VM_PROTOCOL = ROOT / "docs" / "calamares-disposable-vm-validation.md"
+EXEC_RESEARCH = ROOT / "docs" / "calamares-exec-module-research.md"
 
 
 class CalamaresConfigTemplateTests(unittest.TestCase):
@@ -66,6 +67,16 @@ class CalamaresConfigTemplateTests(unittest.TestCase):
         self.assertIn("sin `--skippgpcheck`", protocol)
         self.assertIn("`exec: []`", protocol)
         self.assertIn("`QT_QPA_PLATFORM=offscreen`", protocol)
+
+    def test_execution_contract_is_documentary_until_vm_preconditions_exist(self):
+        research = EXEC_RESEARCH.read_text(encoding="utf-8")
+        self.assertIn("`partition`", research)
+        self.assertIn("`unpackfs`", research)
+        self.assertIn("`displaymanager`", research)
+        self.assertIn("`bootloader`", research)
+        self.assertIn("`shellprocess`", research)
+        self.assertIn("no debe añadirse a `unpackfs.conf`", research)
+        self.assertFalse((CONFIG / "modules").exists())
 
 
 if __name__ == "__main__":
