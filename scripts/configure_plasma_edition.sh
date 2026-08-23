@@ -35,12 +35,12 @@ EOF
 cat > "$ROOTFS/var/lib/sddm/state.conf" <<'EOF'
 [Last]
 User=danenone
-Session=plasmawayland.desktop
+Session=plasma.desktop
 EOF
 
 cat > "$ROOTFS/etc/influent-danenone/session-policy.conf" <<'EOF'
 DISPLAY_MANAGER=sddm
-DEFAULT_SESSION=plasmawayland.desktop
+DEFAULT_SESSION=plasma.desktop
 ADVANCED_SESSION=hyprland.desktop
 EOF
 

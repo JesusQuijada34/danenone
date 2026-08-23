@@ -8,7 +8,7 @@ La edición nueva será un perfil **separado** de la ISO RC actual. Su sesión p
 |---|---|---|
 | Sesión predeterminada | Plasma (Wayland) | El perfil RC existente no cambia |
 | Compositor | KWin | Hyprland continúa disponible como sesión avanzada |
-| Gestor de inicio | SDDM con Plasma Wayland preseleccionado | La persona puede elegir Hyprland desde las entradas de `/usr/share/wayland-sessions/` |
+| Gestor de inicio | SDDM con `plasma.desktop` preseleccionado | La persona puede elegir Hyprland desde las entradas de `/usr/share/wayland-sessions/` |
 | Instalador | Calamares con identidad y presentación QML propias | El OOBE heredado queda aislado mientras se migra gradualmente |
 | Tema | Base Breeze/Plasma con acento Verdypor, contrastes accesibles y recursos propios | No se descargan temas de terceros sin auditoría |
 

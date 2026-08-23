@@ -40,8 +40,8 @@ class ConfigurePlasmaEditionTests(unittest.TestCase):
             customize = (profile / "airootfs" / "root" / "customize_airootfs.sh").read_text(encoding="utf-8")
 
             self.assertNotIn("[Autologin]", sddm)
-            self.assertIn("Session=plasmawayland.desktop", state)
-            self.assertIn("DEFAULT_SESSION=plasmawayland.desktop", policy)
+            self.assertIn("Session=plasma.desktop", state)
+            self.assertIn("DEFAULT_SESSION=plasma.desktop", policy)
             self.assertIn("ADVANCED_SESSION=hyprland.desktop", policy)
             self.assertIn("systemctl disable greetd.service", customize)
             self.assertIn("systemctl enable sddm.service", customize)
