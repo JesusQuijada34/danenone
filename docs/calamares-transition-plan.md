@@ -35,14 +35,14 @@ El slideshow QML se comprobó con `qmllint` de Qt6 sin diagnósticos. El paquete
 
 | Puerta de seguridad | Evidencia requerida | Estado de esta iteración |
 |---|---|---|
-| Fuente del runtime | Tarball oficial con checksum y firma verificados; clave configurada en el keyring de `makepkg`. | Checksum y firma revisados; falta integrar la confianza de la clave en una compilación de producción. |
+| Fuente del runtime | Tarball oficial con checksum y firma verificados; clave configurada en el keyring de `makepkg`. | Superada: el helper versionado inicializa un keyring temporal y `makepkg --verifysource` validó checksum y firma sin omitir PGP. |
 | Paquete de configuración | Construcción reproducible y ruta de instalación no activa. | Superada: sólo instala bajo `/usr/share/danenone/calamares-template`. |
 | Interfaz QML | Análisis estático sin errores ni avisos de alcance. | Superada con `qmllint` de Qt6. |
 | Handoff OOBE | Lista permitida de idioma/edición, permisos `0600` y exclusión de secretos. | Superada por pruebas automatizadas; la plantilla no lo consume aún. |
 | Integración en edición | Dependencias, copia explícita a `/etc/calamares`, políticas y lanzador controlados. | Pendiente y prohibida para Plasma RC1. |
 | Instalación real | Máquinas virtuales desechables con discos de prueba y recuperación comprobada. | Pendiente. |
 
-Antes de añadir dependencias o copiar la configuración a una futura edición, la compilación deberá verificar la firma PGP desde el keyring de `makepkg`, sin `--skippgpcheck`. Sólo después se implementarán módulos de ejecución específicos, confirmaciones explícitas y pruebas completas sobre discos virtuales desechables. La publicación de una nueva ISO se evaluará como una operación separada y no modifica la release candidate existente.
+Antes de añadir dependencias o copiar la configuración a una futura edición, la compilación deberá ejecutar el helper de verificación y confirmar la firma PGP desde su keyring temporal, sin `--skippgpcheck`. Sólo después se implementarán módulos de ejecución específicos, confirmaciones explícitas y pruebas completas sobre discos virtuales desechables. La publicación de una nueva ISO se evaluará como una operación separada y no modifica la release candidate existente.
 
 El procedimiento de aislamiento, la matriz de pruebas y la evidencia mínima se detallan en [el protocolo de validación en VM desechable](calamares-disposable-vm-validation.md).
 

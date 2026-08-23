@@ -12,6 +12,7 @@ class CalamaresPackagingTests(unittest.TestCase):
         package = PACKAGE.read_text(encoding="utf-8")
         self.assertIn("pkgver=3.4.2", package)
         self.assertIn("733bbbb00dc9f84874bd5c22960952f317ea2537565431179fa2152b2fbfdccc", package)
+        self.assertIn("00ACD15E25A79FEE028B0EE57FEA3DA6169C77D6", package)
         self.assertIn("6D0837841C068A233F24127B14B6CC381BC256D6", package)
         self.assertIn("calamares-${pkgver}.tar.gz.asc", package)
 

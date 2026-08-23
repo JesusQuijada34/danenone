@@ -10,13 +10,16 @@ La receta se compiló correctamente en un chroot Arch de prueba como `danenone-c
 
 El tarball se comprobó frente al SHA-256 publicado. La firma PGP también fue validada en un anillo temporal: la clave se descargó desde el sitio personal publicado por el firmante, su huella primaria se contrastó con la actualización GPG de KDE y la firma del tarball verificó correctamente con el subkey `6D0837841C068A233F24127B14B6CC381BC256D6`. [3] [4]
 
+La clave pública mínima verificada se versiona bajo `keys/`. El helper `scripts/verify-source.sh` comprueba su SHA-256, crea un keyring temporal, importa la clave, contrasta la huella primaria y la subkey, y llama a `makepkg --verifysource`. Esta ruta se ejecutó correctamente en el chroot Arch con los pseudo-dispositivos privados montados; el checksum del tarball y la firma PGP aprobaron sin `--skippgpcheck`.
+
 ## Revisión obligatoria antes de compilar
 
 1. Importar y verificar la clave `6D0837841C068A233F24127B14B6CC381BC256D6` desde una fuente de confianza antes de aceptar la firma.
-2. Construir en un contenedor Arch desechable o en el entorno Archiso, nunca en una instalación de usuario.
-3. Ejecutar `makepkg --verifysource` antes de compilar y revisar que coincida el SHA-256 fijado.
-4. Crear un paquete independiente de configuración y branding; no modificar los ejemplos que distribuye Calamares.
-5. Probar instalaciones automáticas, manuales y dual boot con discos de prueba antes de añadir el paquete a una ISO.
+2. Ejecutar `scripts/verify-source.sh` desde este directorio. El helper valida el checksum de la clave pública versionada, importa la clave en un `GNUPGHOME` temporal, comprueba la huella primaria y subkey de firma, y finalmente llama a `makepkg --verifysource`.
+3. Construir en un contenedor Arch desechable o en el entorno Archiso, nunca en una instalación de usuario.
+4. Ejecutar una compilación normal sólo después de que la verificación de fuentes haya sido correcta y revisar que coincida el SHA-256 fijado.
+5. Crear un paquete independiente de configuración y branding; no modificar los ejemplos que distribuye Calamares.
+6. Probar instalaciones automáticas, manuales y dual boot con discos de prueba antes de añadir el paquete a una ISO.
 
 ## Alcance intencionalmente excluido
 
