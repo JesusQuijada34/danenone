@@ -65,6 +65,8 @@ No se creará un `settings.conf` ejecutable de referencia. El orden futuro se de
 
 Las referencias se revisaron con pruebas automatizadas que exigen el sufijo `.conf.reference`, rechazan cualquier `settings.conf` dentro del árbol y comprueban la ausencia de `shellprocess`, `contextualprocess` y `webview`. El paquete `danenone-calamares-config` se reconstruyó de forma aislada e inspeccionó con `pacman -Qlp`: no contiene `reference-modules`, sólo la plantilla pasiva bajo `/usr/share/danenone/calamares-template/etc/calamares`. Por ello, este hito no instala módulos ejecutables ni modifica la ISO Plasma RC1.
 
+El runtime recompilado `danenone-calamares 3.4.2-2` se auditó de forma pasiva con `pacman -Qlp`. Contiene los trece módulos declarados por la secuencia de referencia: `welcome`, `locale`, `keyboard`, `partition`, `users`, `summary`, `mount`, `unpackfs`, `fstab`, `displaymanager`, `bootloader`, `umount` y `finished`. El auditor rechaza que la secuencia incluya `shellprocess`, `contextualprocess` o `webview`, y no instala ni ejecuta el runtime. Esta presencia reduce un bloqueo de empaquetado, pero no elimina los bloqueos de configuración real, ISO de laboratorio y matriz de instalación en `qcow2`.
+
 ## Próximo paso seguro
 
 Antes de crear una configuración ejecutora aislada se debe describir el layout exacto de la ISO de laboratorio, el origen de la copia y los comandos de GRUB disponibles dentro del destino. Hasta que esas precondiciones estén verificadas, los módulos permanecen en este contrato documental y la plantilla pasiva no cambia.
