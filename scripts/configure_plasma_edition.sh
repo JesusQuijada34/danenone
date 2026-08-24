@@ -2,6 +2,7 @@
 set -euo pipefail
 
 PROFILE="${1:-}"
+EDITION="${2:-plasma}"
 if [[ -z "$PROFILE" || ! -d "$PROFILE/airootfs" || ! -f "$PROFILE/packages.x86_64" ]]; then
   printf 'Uso: %s <perfil-archiso>\n' "$0" >&2
   exit 2
@@ -9,13 +10,21 @@ fi
 
 ROOTFS="$PROFILE/airootfs"
 
-# La variante Plasma tiene un nombre y versión propios para producir un asset
-# independiente de la RC basada en Hyprland.
-sed -i -E \
-  -e 's/^iso_name=".*"$/iso_name="influent-danenone-plasma"/' \
-  -e 's/^iso_application=".*"$/iso_application="Influent Danenone Plasma — KDE Plasma + Hyprland avanzado"/' \
-  -e 's/^iso_version=".*"$/iso_version="0.5.0-rc1"/' \
-  "$PROFILE/profiledef.sh"
+# La variante Plasma de laboratorio usa identidad propia. La RC publicada
+# conserva su nombre y versión originales cuando se prepara la edición plasma.
+if [[ "$EDITION" == "plasma-lab" ]]; then
+  sed -i -E \
+    -e 's/^iso_name=".*"$/iso_name="influent-danenone-plasma-lab"/' \
+    -e 's/^iso_application=".*"$/iso_application="Influent Danenone Plasma Lab — KDE Plasma + Hyprland avanzado"/' \
+    -e 's/^iso_version=".*"$/iso_version="0.6.0-lab"/' \
+    "$PROFILE/profiledef.sh"
+else
+  sed -i -E \
+    -e 's/^iso_name=".*"$/iso_name="influent-danenone-plasma"/' \
+    -e 's/^iso_application=".*"$/iso_application="Influent Danenone Plasma — KDE Plasma + Hyprland avanzado"/' \
+    -e 's/^iso_version=".*"$/iso_version="0.5.0-rc1"/' \
+    "$PROFILE/profiledef.sh"
+fi
 
 # El perfil Plasma sustituye el inicio directo por greetd, pero mantiene el
 # paquete y la configuración de Hyprland como una sesión avanzada elegible.

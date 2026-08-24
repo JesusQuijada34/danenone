@@ -6,7 +6,7 @@ EDITION="${1:-}"
 OUTPUT="${2:-$ROOT/build/archiso-editions/$EDITION}"
 
 if [[ -z "$EDITION" || ! -f "$ROOT/editions/$EDITION.conf" ]]; then
-  printf 'Uso: %s <home|enterprise|developer|minimal|frozen-lab|plasma> [directorio-salida]\n' "$0" >&2
+  printf 'Uso: %s <home|enterprise|developer|minimal|frozen-lab|plasma|plasma-lab> [directorio-salida]\n' "$0" >&2
   exit 2
 fi
 
@@ -31,8 +31,8 @@ cat "$PACKAGE_FILE" >> "$OUTPUT/packages.x86_64"
 install -Dm644 "$ROOT/editions/$EDITION.conf" "$OUTPUT/airootfs/etc/influent-danenone/edition.conf"
 install -Dm644 "$PACKAGE_FILE" "$OUTPUT/airootfs/etc/influent-danenone/packages.list"
 printf '%s\n' "EDITION_PROFILE=$EDITION" > "$OUTPUT/airootfs/etc/influent-danenone/profile-generated"
-if [[ "$EDITION" == "plasma" ]]; then
-  "$ROOT/scripts/configure_plasma_edition.sh" "$OUTPUT"
+if [[ "$EDITION" == "plasma" || "$EDITION" == "plasma-lab" ]]; then
+  "$ROOT/scripts/configure_plasma_edition.sh" "$OUTPUT" "$EDITION"
 fi
 "$ROOT/scripts/prepare_archiso_foundstore_release.sh" "$OUTPUT"
 printf 'Perfil preparado: %s\nSalida: %s\n' "$EDITION" "$OUTPUT"
