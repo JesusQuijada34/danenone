@@ -67,6 +67,19 @@ Las referencias se revisaron con pruebas automatizadas que exigen el sufijo `.co
 
 El runtime recompilado `danenone-calamares 3.4.2-2` se auditó de forma pasiva con `pacman -Qlp`. Contiene los trece módulos declarados por la secuencia de referencia: `welcome`, `locale`, `keyboard`, `partition`, `users`, `summary`, `mount`, `unpackfs`, `fstab`, `displaymanager`, `bootloader`, `umount` y `finished`. El auditor rechaza que la secuencia incluya `shellprocess`, `contextualprocess` o `webview`, y no instala ni ejecuta el runtime. Esta presencia reduce un bloqueo de empaquetado, pero no elimina los bloqueos de configuración real, ISO de laboratorio y matriz de instalación en `qcow2`.
 
+## Precondiciones observadas para una ISO de laboratorio
+
+El perfil actual declara `install_dir="influent"` y `airootfs_image_type="squashfs"`. Una inspección de sólo lectura de la ISO candidata `v0.5.0-plasma-rc1` confirmó los archivos `/influent/x86_64/airootfs.sfs` y `/influent/x86_64/airootfs.sha512`; su SHA-256 coincide con el publicado para la RC1. Esa evidencia describe exclusivamente el medio ya liberado y no autoriza a apuntar `unpackfs` a la RC1.
+
+| Elemento | Evidencia disponible | Condición previa para el laboratorio |
+| --- | --- | --- |
+| Sistema live | El perfil usa un squashfs bajo el directorio `influent`; RC1 contiene `airootfs.sfs` y un checksum vecino. | Inspeccionar la ruta de montaje durante el arranque de una ISO de laboratorio y registrar un checksum propio antes de poblar `unpackfs`. |
+| Runtime Calamares | El paquete aislado depende de `kcoreaddons`, `kpmcore`, `polkit-qt6`, `qt6-base`, `qt6-declarative`, `qt6-svg` y `yaml-cpp`. | Incluir el runtime y dependencias sólo en una edición de laboratorio nueva, no en la lista de paquetes de RC1. |
+| Sesión gráfica | La edición Plasma incluye `plasma-meta`, SDDM y el agente Polkit de KDE. | Verificar en la VM que SDDM conserva Plasma/KWin por defecto y Hyprland como sesión avanzada después de la instalación. |
+| Arranque objetivo | Las referencias limitan el cargador a GRUB, pero aún no están activas. | Confirmar disponibilidad de kernel, GRUB y herramientas EFI en el destino instalado y probar BIOS y UEFI por separado. |
+
+La ruta de montaje en tiempo de ejecución del medio live, el manifiesto definitivo de la nueva ISO y la matriz de firmware continúan sin verificar. Hasta completar esas tres comprobaciones, `unpackfs.conf.reference` debe conservar `unpack: []`, no puede existir un `settings.conf` ejecutable y RC1 no debe reconstruirse ni modificarse.
+
 ## Próximo paso seguro
 
 Antes de crear una configuración ejecutora aislada se debe describir el layout exacto de la ISO de laboratorio, el origen de la copia y los comandos de GRUB disponibles dentro del destino. Hasta que esas precondiciones estén verificadas, los módulos permanecen en este contrato documental y la plantilla pasiva no cambia.
