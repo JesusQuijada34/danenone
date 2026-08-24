@@ -89,6 +89,8 @@ class CalamaresConfigTemplateTests(unittest.TestCase):
         self.assertIn("`bootloader`", research)
         self.assertIn("`shellprocess`", research)
         self.assertIn("no debe añadirse a `unpackfs.conf`", research)
+        self.assertIn("/run/archiso/bootmnt/influent/x86_64/airootfs.sfs", research)
+        self.assertIn("no una autorización para usarla como origen de `unpackfs`", research)
         self.assertFalse((CONFIG / "modules").exists())
 
     def test_reference_modules_are_not_packaged_or_loadable(self):

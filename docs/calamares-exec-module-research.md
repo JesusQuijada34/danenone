@@ -69,7 +69,9 @@ El runtime recompilado `danenone-calamares 3.4.2-2` se auditó de forma pasiva c
 
 ## Precondiciones observadas para una ISO de laboratorio
 
-El perfil actual declara `install_dir="influent"` y `airootfs_image_type="squashfs"`. Una inspección de sólo lectura de la ISO candidata `v0.5.0-plasma-rc1` confirmó los archivos `/influent/x86_64/airootfs.sfs` y `/influent/x86_64/airootfs.sha512`; su SHA-256 coincide con el publicado para la RC1. Esa evidencia describe exclusivamente el medio ya liberado y no autoriza a apuntar `unpackfs` a la RC1.
+El perfil actual declara `install_dir="influent"` y `airootfs_image_type="squashfs"`. Una inspección de sólo lectura de la ISO candidata `v0.5.0-plasma-rc1` confirmó los archivos `/influent/x86_64/airootfs.sfs` y `/influent/x86_64/airootfs.sha512`; su SHA-256 coincide con el publicado para la RC1. La extracción estática de su initramfs confirmó que el hook Archiso compone el origen live como `/run/archiso/bootmnt/${archisobasedir}/${arch}/airootfs.sfs`. Los menús BIOS y UEFI de RC1 pasan `archisobasedir=influent`, por lo que la ruta live observada para ese medio es `/run/archiso/bootmnt/influent/x86_64/airootfs.sfs`.
+
+Esa ruta es evidencia técnica de RC1, no una autorización para usarla como origen de `unpackfs`. Una ISO de laboratorio debe volver a comprobar su propio argumento `archisobasedir`, su arquitectura, el checksum del squashfs y la ruta expuesta por su initramfs antes de escribir una configuración activa.
 
 | Elemento | Evidencia disponible | Condición previa para el laboratorio |
 | --- | --- | --- |
@@ -78,7 +80,7 @@ El perfil actual declara `install_dir="influent"` y `airootfs_image_type="squash
 | Sesión gráfica | La edición Plasma incluye `plasma-meta`, SDDM y el agente Polkit de KDE. | Verificar en la VM que SDDM conserva Plasma/KWin por defecto y Hyprland como sesión avanzada después de la instalación. |
 | Arranque objetivo | Las referencias limitan el cargador a GRUB, pero aún no están activas. | Confirmar disponibilidad de kernel, GRUB y herramientas EFI en el destino instalado y probar BIOS y UEFI por separado. |
 
-La ruta de montaje en tiempo de ejecución del medio live, el manifiesto definitivo de la nueva ISO y la matriz de firmware continúan sin verificar. Hasta completar esas tres comprobaciones, `unpackfs.conf.reference` debe conservar `unpack: []`, no puede existir un `settings.conf` ejecutable y RC1 no debe reconstruirse ni modificarse.
+El manifiesto definitivo de una ISO nueva y la matriz de firmware continúan sin verificar. Hasta completar esas comprobaciones, `unpackfs.conf.reference` debe conservar `unpack: []`, no puede existir un `settings.conf` ejecutable y RC1 no debe reconstruirse ni modificarse.
 
 ## Próximo paso seguro
 
