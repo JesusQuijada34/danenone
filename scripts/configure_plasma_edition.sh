@@ -40,6 +40,11 @@ install -d -m 0755 "$ROOTFS/etc/sddm.conf.d" "$ROOTFS/var/lib/sddm" "$ROOTFS/etc
 cat > "$ROOTFS/etc/sddm.conf.d/10-influent-danenone.conf" <<'EOF'
 [Theme]
 Current=breeze
+
+[Users]
+# Plasma se fija para la sesión live; Hyprland sólo se elige manualmente.
+RememberLastSession=false
+RememberLastUser=false
 EOF
 
 # SDDM preselecciona Plasma Wayland para la cuenta live sin ocultar el

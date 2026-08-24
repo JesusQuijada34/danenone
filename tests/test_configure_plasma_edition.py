@@ -41,6 +41,8 @@ class ConfigurePlasmaEditionTests(unittest.TestCase):
             customize = (profile / "airootfs" / "root" / "customize_airootfs.sh").read_text(encoding="utf-8")
 
             self.assertNotIn("[Autologin]", sddm)
+            self.assertIn("RememberLastSession=false", sddm)
+            self.assertIn("RememberLastUser=false", sddm)
             self.assertIn("Session=plasma.desktop", state)
             self.assertIn("DEFAULT_SESSION=plasma.desktop", policy)
             self.assertIn("ADVANCED_SESSION=hyprland.desktop", policy)

@@ -46,6 +46,12 @@ class PlasmaLabTests(unittest.TestCase):
         self.assertIn('"$PROFILE/airootfs/etc/calamares"', generator)
         self.assertIn("archiso/bootmnt/influent/x86_64/airootfs.sfs", generator)
 
+    def test_sddm_locks_plasma_default_without_hiding_hyprland(self):
+        plasma = PLASMA_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("Session=plasma.desktop", plasma)
+        self.assertIn("RememberLastSession=false", plasma)
+        self.assertIn("ADVANCED_SESSION=hyprland.desktop", plasma)
+
 
 if __name__ == "__main__":
     unittest.main()
