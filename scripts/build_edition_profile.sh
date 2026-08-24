@@ -46,6 +46,7 @@ if [[ "$EDITION" == "plasma-lab" ]]; then
     exit 5
   fi
   sed -i '78i[danenone-lab]\nSigLevel = Optional\nServer = file://'"$LAB_REPO"'\n' "$OUTPUT/pacman.conf"
+  "$ROOT/scripts/configure_calamares_plasma_lab.sh" "$OUTPUT" "$EDITION"
 fi
 "$ROOT/scripts/prepare_archiso_foundstore_release.sh" "$OUTPUT"
 printf 'Perfil preparado: %s\nSalida: %s\n' "$EDITION" "$OUTPUT"

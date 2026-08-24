@@ -5,6 +5,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BUILD_SCRIPT = ROOT / "scripts" / "build_edition_profile.sh"
 PLASMA_SCRIPT = ROOT / "scripts" / "configure_plasma_edition.sh"
+CALAMARES_LAB_SCRIPT = ROOT / "scripts" / "configure_calamares_plasma_lab.sh"
 
 
 class PlasmaLabTests(unittest.TestCase):
@@ -36,6 +37,14 @@ class PlasmaLabTests(unittest.TestCase):
         packages = (ROOT / "packages" / "editions" / "plasma.packages").read_text(encoding="utf-8")
         self.assertNotIn("calamares", packages.lower())
         self.assertFalse((ROOT / "archiso-profile" / "airootfs" / "etc" / "calamares").exists())
+
+    def test_active_calamares_generator_is_restricted_to_plasma_lab(self):
+        generator = CALAMARES_LAB_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('"$EDITION" != "plasma-lab"', generator)
+        self.assertIn("DANENONE_CALAMARES_LAB_ENABLE", generator)
+        self.assertIn("qcow2-only", generator)
+        self.assertIn('"$PROFILE/airootfs/etc/calamares"', generator)
+        self.assertIn("archiso/bootmnt/influent/x86_64/airootfs.sfs", generator)
 
 
 if __name__ == "__main__":

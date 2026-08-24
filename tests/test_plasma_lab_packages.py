@@ -21,6 +21,10 @@ class PlasmaLabPackageTests(unittest.TestCase):
         self.assertIn("sha256sum -c SHA256SUMS", build)
         self.assertIn("[danenone-lab]", build)
         self.assertIn("Server = file://", build)
+        self.assertIn("configure_calamares_plasma_lab.sh", build)
+        generator = (ROOT / "scripts" / "configure_calamares_plasma_lab.sh").read_text(encoding="utf-8")
+        self.assertIn("DANENONE_CALAMARES_LAB_ENABLE", generator)
+        self.assertIn("qcow2-only", generator)
 
     def test_repo_generator_requires_only_expected_artifacts(self):
         helper = (ROOT / "scripts" / "prepare_plasma_lab_repo.sh").read_text(encoding="utf-8")

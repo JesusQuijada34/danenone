@@ -12,7 +12,7 @@ La configuración de producción de Calamares debe vivir bajo `/etc/calamares`, 
 | --- | --- | --- |
 | Runtime | `danenone-calamares` 3.4.2-2 | Recompilado con `makepkg` y clave PGP confiada por su keyring, sin `--skippgpcheck`. |
 | Plantilla | `danenone-calamares-config` 0.1.0-1 | Inspeccionada para confirmar que sólo contiene `/usr/share/danenone/calamares-template/etc/calamares`. |
-| Configuración ejecutable | Futuro árbol `/etc/calamares` | Debe declarar módulos auditados para `mount`, `unpackfs`, `fstab`, `locale`, `users`, `displaymanager` y `bootloader`; nunca se deriva de forma automática de la plantilla pasiva. |
+| Configuración ejecutable | Árbol generado en `<perfil-plasma-lab>/airootfs/etc/calamares` | Sólo `configure_calamares_plasma_lab.sh` puede crearlo con `DANENONE_CALAMARES_LAB_ENABLE=qcow2-only`; declara módulos auditados y nunca modifica la plantilla pasiva ni RC1. |
 | Medio de prueba | Nueva ISO de laboratorio sin publicar | Debe ser distinta de `v0.5.0-plasma-rc1` y llevar su propio checksum. |
 | Destino | Imagen QEMU `qcow2` creada para la prueba | Ningún dispositivo `/dev/sd*`, `/dev/nvme*`, USB o disco del host es admisible. |
 
@@ -22,7 +22,7 @@ La configuración de producción de Calamares debe vivir bajo `/etc/calamares`, 
 
 La persona que ejecute la prueba debe crear una carpeta temporal nueva, dentro de `build/` u otra ruta ignorada por Git, y usar imágenes `qcow2` que estén bajo esa carpeta. Antes de abrir QEMU, debe registrar la ruta absoluta de la imagen y rechazar la ejecución si no termina en `.qcow2` o si se resuelve fuera de la carpeta temporal. El comando de prueba no debe aceptar argumentos que representen dispositivos de bloque.
 
-La futura ISO de laboratorio debe incorporar el runtime y una copia explícita de una configuración **completa** bajo `/etc/calamares`. La copia sólo se permite cuando los módulos ejecutores tengan sus configuraciones versionadas, revisadas y probadas. El handoff de OOBE puede proponer únicamente `SELECTED_LANGUAGE` y `SELECTED_EDITION`; Calamares debe pedir y confirmar el disco, el modo de particionado y la contraseña dentro de su propia interfaz. [1]
+La futura ISO de laboratorio debe incorporar el runtime y una configuración **completa** bajo `/etc/calamares`, creada sólo dentro de su perfil temporal. El generador exige la edición `plasma-lab`, el consentimiento de construcción `DANENONE_CALAMARES_LAB_ENABLE=qcow2-only`, un perfil Archiso válido y rechaza sobrescribir una configuración existente. El handoff de OOBE puede proponer únicamente `SELECTED_LANGUAGE` y `SELECTED_EDITION`; Calamares debe pedir y confirmar el disco, el modo de particionado y la contraseña dentro de su propia interfaz. [1]
 
 ### Validador de precondiciones de laboratorio
 
@@ -80,7 +80,20 @@ La plantilla se construyó como paquete aislado, su estructura se validó con pr
 
 Como preflight de disposición de archivos, ambos paquetes se instalaron con `pacman` bajo un root temporal `tmpfs` dentro del chroot. El runtime quedó en `/usr/bin/calamares`; la plantilla quedó en `/usr/share/danenone/calamares-template/etc/calamares/settings.conf`, mantuvo `exec: []` y no creó `/etc/calamares`. El root temporal se desmontó al concluir y las bases de datos del chroot y de Plasma RC1 no recibieron esos paquetes. Esta comprobación deliberadamente omitió dependencias porque el root de laboratorio no posee repositorios ni bibliotecas runtime; valida rutas de paquete, no una ejecución de Calamares.
 
-Persisten dos bloqueos deliberados. La plantilla declara `exec: []`; aún no existen configuraciones auditadas para los módulos que escriben en el disco. El runtime ya fue recompilado después de validar checksum y firma PGP con un keyring temporal de `makepkg`, sin omitir la comprobación de firma. Por último, no existe una ISO de laboratorio ni un conjunto de `qcow2` para la matriz anterior. Mientras alguno de esos bloqueos siga abierto, la configuración no debe copiarse a `/etc/calamares`, añadirse a `plasma.packages` ni aparecer en una ISO publicada.
+El bloqueo de configuración ejecutable se resolvió de forma limitada y aislada: `scripts/configure_calamares_plasma_lab.sh` crea `settings.conf`, los módulos necesarios y el branding únicamente bajo un perfil temporal `plasma-lab`. Requiere `DANENONE_CALAMARES_LAB_ENABLE=qcow2-only`, no acepta otras ediciones, no sobrescribe un árbol existente y conserva la confirmación de particionado y usuario dentro de Calamares. La fuente `unpackfs` apunta al layout Archiso `/run/archiso/bootmnt/influent/x86_64/airootfs.sfs`; antes de arrancar se debe comprobar que la ISO Lab recién construida conserva ese `install_dir` y registrar su checksum propio.
+
+Una validación estática generó un perfil temporal con el repositorio local verificado de los dos paquetes Calamares. Confirmó que el árbol activo sólo aparece en el perfil temporal, que RC1 y `archiso-profile` siguen sin `/etc/calamares`, y que no se ejecutó `mkarchiso`. La comprobación no instaló, particionó ni arrancó nada.
+
+Persisten los bloqueos materiales: no existe todavía una ISO Plasma Lab, no hay checksum de ese medio y no se han creado discos `qcow2` para las pruebas. Por ello siguen prohibidos el arranque de QEMU, cualquier prueba de particionado y toda publicación. Una vez autorizada la fase material, el orden obligatorio será el siguiente:
+
+| Paso | Acción permitida | Evidencia requerida antes de continuar |
+| --- | --- | --- |
+| 1 | Reconstruir runtime con `verify-source.sh` y PGP, y reconstruir la plantilla. | Firma y checksum válidos, sin `--skippgpcheck`. |
+| 2 | Crear un repositorio temporal con exactamente los dos paquetes y su manifiesto. | `SHA256SUMS` aprobado y base Pacman local. |
+| 3 | Generar `plasma-lab` con `DANENONE_CALAMARES_LAB_ENABLE=qcow2-only` y construir una ISO nueva en un directorio ignorado. | ISO distinta de RC1, `install_dir=influent` inspeccionado y SHA-256 registrado. |
+| 4 | Crear los destinos virtuales y ejecutar `validate_calamares_lab.py`. | ISO y todos los discos son archivos regulares `.qcow2` dentro del workspace. |
+| 5 | Arrancar QEMU en BIOS y UEFI por separado. | Resultados saneados de cancelación, instalación limpia, particionado manual y recuperación de error. |
+| 6 | Inspeccionar el sistema instalado. | SDDM inicia `plasma.desktop`, Hyprland permanece como sesión avanzada y GRUB opera en el firmware correspondiente. |
 
 ## Referencias
 
