@@ -119,6 +119,10 @@ unpack:
   - source: "/run/archiso/bootmnt/influent/x86_64/airootfs.sfs"
     sourcefs: "squashfs"
     destination: ""
+    # La autorización existe sólo en la sesión live; nunca debe copiarse al
+    # sistema instalado.
+    exclude:
+      - "etc/polkit-1/rules.d/49-influent-live-calamares.rules"
 EOF
 
 cat > "$DEST/modules/fstab.conf" <<'EOF'

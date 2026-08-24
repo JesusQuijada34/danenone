@@ -64,6 +64,7 @@ class ConfigureCalamaresPlasmaLabTests(unittest.TestCase):
             self.assertNotIn("contextualprocess", settings)
             self.assertNotIn("webview", settings)
             self.assertIn('/run/archiso/bootmnt/influent/x86_64/airootfs.sfs', unpackfs)
+            self.assertIn('etc/polkit-1/rules.d/49-influent-live-calamares.rules', unpackfs)
             self.assertNotIn("rc1", unpackfs.lower())
             self.assertNotIn("geoip", locale.lower())
             self.assertIn("setRootPassword: false", users)

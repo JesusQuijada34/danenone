@@ -84,13 +84,15 @@ El bloqueo de configuración ejecutable se resolvió de forma limitada y aislada
 
 Una validación estática generó un perfil temporal con el repositorio local verificado de los dos paquetes Calamares. Confirmó que el árbol activo sólo aparece en el perfil temporal, que RC1 y `archiso-profile` siguen sin `/etc/calamares`, y que no se ejecutó `mkarchiso`. La comprobación no instaló, particionó ni arrancó nada.
 
-Persisten los bloqueos materiales: no existe todavía una ISO Plasma Lab, no hay checksum de ese medio y no se han creado discos `qcow2` para las pruebas. Por ello siguen prohibidos el arranque de QEMU, cualquier prueba de particionado y toda publicación. Una vez autorizada la fase material, el orden obligatorio será el siguiente:
-
 ### Ejecución Plasma Lab 0.6.0-lab
 
-Tras la autorización, se creó una ISO **separada y no publicada** `influent-danenone-plasma-lab-0.6.0-lab-x86_64.iso`. Su SHA-256 de laboratorio es `c76a9e4dae5c16d58d6fb44ceea979fa46aa28eb7715b9232b3d728c2b997274`. El preflight aceptó ese archivo y dos destinos nuevos de 32 GiB `qcow2`, uno para BIOS y otro para UEFI; no se adjuntó ningún dispositivo de bloque físico.
+Se creó una ISO **separada y no publicada** `influent-danenone-plasma-lab-0.6.0-lab-x86_64.iso`. Su SHA-256 de laboratorio vigente es `08deb5c25bca988c614418620125d790d6a102d49af6f41ea81072c71723c8b2`. El preflight aceptó ese archivo y dos destinos nuevos de 32 GiB `qcow2`, uno para BIOS y otro para UEFI; no se adjuntó ningún dispositivo de bloque físico.
 
-La inspección estática confirmó que la imagen lleva Foundstore/Fluthin, Plasma/KWin, Hyprland como alternativa, el árbol activo de Calamares y la fuente `unpackfs` propia del layout Archiso. También se actualizó SDDM para declarar `Session=plasma.desktop` y desactivar la retención de la última sesión. Las capturas QEMU con TCG alcanzaron el firmware UEFI y en una ejecución mostraron SDDM, pero las repeticiones BIOS/UEFI posteriores devolvieron framebuffer negro tras ISOLINUX o durante la transición gráfica. Por ello **no se declara validada la sesión por firmware**, no se inicia Calamares, no se particiona y no se publica la ISO. RC1 continúa sin cambios.
+La inspección estática confirmó que la imagen lleva Foundstore/Fluthin, Plasma/KWin, Hyprland como alternativa, el árbol activo de Calamares y la fuente `unpackfs` propia del layout Archiso. La configuración live de SDDM declara `Session=plasma.desktop`, desactiva la retención de la última sesión y los procesos de una sesión autologin comprobada incluyen `startplasma-wayland`, `kwin_wayland` y `plasmashell`. El servicio OEM ya termina correctamente después de preservar el bit ejecutable del helper.
+
+La regla live de Polkit se limita a `io.calamares.calamares.pkexec.run` para `danenone` cuando el sujeto es local y activo. Se verificó contra el PID de `plasmashell` de la sesión `seat0` activa mediante `pkcheck`, que devolvió `polkit\56result=yes` y código `0`; `unpackfs` excluye esa regla del sistema instalado. Esta prueba comprueba la autorización exacta, pero no sustituye la apertura visual del lanzador oficial ni autoriza particionar.
+
+Los arranques normales separados alcanzaron ISOLINUX/BIOS y OVMF/UEFI desde la ISO, y ambos continuaron al kernel sin interacción. Bajo TCG, el framebuffer posterior y el kernel muestran bloqueos suaves de CPU durante la carga; por ello no aportan una captura fiable de SDDM, Plasma ni de la primera página de Calamares. El canal directo de kernel confirma el live root, OEM, SDDM y Plasma, pero no sustituye la prueba final de firmware normal. Por tanto, **la sesión gráfica por firmware y la interfaz del instalador siguen sin validarse**, no se inicia particionado, no se publica la ISO y RC1 continúa sin cambios.
 
 | Paso | Acción permitida | Evidencia requerida antes de continuar |
 | --- | --- | --- |

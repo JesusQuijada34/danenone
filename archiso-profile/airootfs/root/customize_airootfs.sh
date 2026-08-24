@@ -4,6 +4,7 @@ set -euo pipefail
 useradd -m -U -s /bin/bash danenone || true
 usermod -aG video,audio,input,network,storage,seat danenone || true
 passwd -d danenone || true
+chmod 0755 /usr/local/bin/influent-oem-id
 mkdir -p /home/danenone/.config/hypr /home/danenone/.config/foot
 cp /etc/hypr/hyprland.conf /home/danenone/.config/hypr/hyprland.conf
 cat > /home/danenone/.config/hypr/hyprpaper.conf <<'EOF'

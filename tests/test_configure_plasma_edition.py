@@ -40,18 +40,35 @@ class ConfigurePlasmaEditionTests(unittest.TestCase):
             motd = (profile / "airootfs" / "etc" / "motd").read_text(encoding="utf-8")
             customize = (profile / "airootfs" / "root" / "customize_airootfs.sh").read_text(encoding="utf-8")
 
-            self.assertNotIn("[Autologin]", sddm)
+            self.assertIn("[Autologin]", sddm)
+            self.assertIn("User=danenone", sddm)
+            self.assertIn("Session=plasma.desktop", sddm)
+            self.assertIn("Relogin=false", sddm)
             self.assertIn("RememberLastSession=false", sddm)
             self.assertIn("RememberLastUser=false", sddm)
-            self.assertIn("Session=plasma.desktop", state)
+            self.assertIn("Session=/usr/share/wayland-sessions/plasma.desktop", state)
+            self.assertIn("chown sddm:sddm /var/lib/sddm/state.conf", customize)
+            self.assertIn("chmod 0600 /var/lib/sddm/state.conf", customize)
             self.assertIn("DEFAULT_SESSION=plasma.desktop", policy)
             self.assertIn("ADVANCED_SESSION=hyprland.desktop", policy)
             self.assertIn("KDE Plasma / KWin", motd)
             self.assertIn("Hyprland", motd)
             self.assertNotIn("greetd.service", customize)
             self.assertIn("systemctl enable sddm.service", customize)
+            self.assertFalse((profile / "airootfs" / "etc" / "polkit-1" / "rules.d" / "49-influent-live-calamares.rules").exists())
             self.assertIn('iso_name="influent-danenone-plasma"', profiledef)
             self.assertIn('iso_version="0.5.0-rc1"', profiledef)
+
+    def test_plasma_lab_allows_only_active_local_live_user_to_launch_official_calamares(self):
+        with tempfile.TemporaryDirectory() as directory:
+            profile = self.create_profile(Path(directory))
+            subprocess.run([str(CONFIGURATOR), str(profile), "plasma-lab"], check=True)
+            rule = (profile / "airootfs" / "etc" / "polkit-1" / "rules.d" / "49-influent-live-calamares.rules").read_text(encoding="utf-8")
+            self.assertIn('action.id === "io.calamares.calamares.pkexec.run"', rule)
+            self.assertIn('subject.user === "danenone"', rule)
+            self.assertIn("subject.active && subject.local", rule)
+            self.assertIn("polkit.Result.YES", rule)
+            self.assertNotIn("subject.isInGroup", rule)
 
     def test_rejects_profile_without_archiso_structure(self):
         with tempfile.TemporaryDirectory() as directory:

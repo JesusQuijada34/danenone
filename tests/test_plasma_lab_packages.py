@@ -6,12 +6,30 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 class PlasmaLabPackageTests(unittest.TestCase):
+    @staticmethod
+    def package_names(path: pathlib.Path) -> set[str]:
+        return {
+            line.strip()
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        }
+
     def test_lab_package_set_contains_only_expected_calamares_packages(self):
         packages = (ROOT / "packages" / "editions" / "plasma-lab.packages").read_text(encoding="utf-8")
         self.assertIn("danenone-calamares\n", packages)
         self.assertIn("danenone-calamares-config\n", packages)
         self.assertIn("plasma-meta", packages)
         self.assertIn("hyprland", packages)
+
+    def test_lab_keeps_rc1_applications_and_adds_only_calamares_packages(self):
+        rc1 = self.package_names(ROOT / "packages" / "editions" / "plasma.packages")
+        lab = self.package_names(ROOT / "packages" / "editions" / "plasma-lab.packages")
+        self.assertTrue(rc1.issubset(lab))
+        self.assertEqual(lab - rc1, {"danenone-calamares", "danenone-calamares-config"})
+
+        edition = (ROOT / "editions" / "plasma-lab.conf").read_text(encoding="utf-8")
+        self.assertIn("APP_SET=home", edition)
+        self.assertIn("foundstore", edition)
 
     def test_plasma_lab_requires_hashed_local_repository(self):
         build = (ROOT / "scripts" / "build_edition_profile.sh").read_text(encoding="utf-8")

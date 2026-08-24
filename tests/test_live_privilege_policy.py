@@ -14,6 +14,10 @@ class LivePrivilegePolicyTests(unittest.TestCase):
         self.assertNotIn("/usr/bin/chpasswd", script)
         self.assertNotIn("/usr/bin/sed", script)
 
+    def test_live_customization_preserves_oem_helper_executability(self):
+        script = CUSTOMIZE.read_text(encoding="utf-8")
+        self.assertIn("chmod 0755 /usr/local/bin/influent-oem-id", script)
+
 
 if __name__ == "__main__":
     unittest.main()

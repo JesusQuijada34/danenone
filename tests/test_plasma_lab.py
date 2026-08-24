@@ -48,8 +48,12 @@ class PlasmaLabTests(unittest.TestCase):
 
     def test_sddm_locks_plasma_default_without_hiding_hyprland(self):
         plasma = PLASMA_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("[Autologin]", plasma)
         self.assertIn("Session=plasma.desktop", plasma)
+        self.assertIn('SDDM_DEFAULT_SESSION="/usr/share/wayland-sessions/${DEFAULT_SESSION}"', plasma)
+        self.assertIn("Session=${SDDM_DEFAULT_SESSION}", plasma)
         self.assertIn("RememberLastSession=false", plasma)
+        self.assertIn("chown sddm:sddm /var/lib/sddm/state.conf", plasma)
         self.assertIn("ADVANCED_SESSION=hyprland.desktop", plasma)
 
 

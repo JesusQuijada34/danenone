@@ -9,6 +9,9 @@ if [[ -z "$PROFILE" || ! -d "$PROFILE/airootfs" || ! -f "$PROFILE/packages.x86_6
 fi
 
 ROOTFS="$PROFILE/airootfs"
+DEFAULT_SESSION="plasma.desktop"
+ADVANCED_SESSION="hyprland.desktop"
+SDDM_DEFAULT_SESSION="/usr/share/wayland-sessions/${DEFAULT_SESSION}"
 
 # La variante Plasma de laboratorio usa identidad propia. La RC publicada
 # conserva su nombre y versión originales cuando se prepara la edición plasma.
@@ -18,6 +21,20 @@ if [[ "$EDITION" == "plasma-lab" ]]; then
     -e 's/^iso_application=".*"$/iso_application="Influent Danenone Plasma Lab — KDE Plasma + Hyprland avanzado"/' \
     -e 's/^iso_version=".*"$/iso_version="0.6.0-lab"/' \
     "$PROFILE/profiledef.sh"
+
+  # La ISO live no tiene contraseña administrativa. Se permite únicamente el
+  # lanzador oficial de Calamares para la cuenta local activa; la regla se
+  # excluye del sistema instalado mediante unpackfs.
+  install -d -m 0755 "$ROOTFS/etc/polkit-1/rules.d"
+  cat > "$ROOTFS/etc/polkit-1/rules.d/49-influent-live-calamares.rules" <<'EOF'
+polkit.addRule(function(action, subject) {
+    if (action.id === "io.calamares.calamares.pkexec.run" &&
+        subject.user === "danenone" && subject.active && subject.local) {
+        return polkit.Result.YES;
+    }
+});
+EOF
+  chmod 0644 "$ROOTFS/etc/polkit-1/rules.d/49-influent-live-calamares.rules"
 else
   sed -i -E \
     -e 's/^iso_name=".*"$/iso_name="influent-danenone-plasma"/' \
@@ -41,6 +58,13 @@ cat > "$ROOTFS/etc/sddm.conf.d/10-influent-danenone.conf" <<'EOF'
 [Theme]
 Current=breeze
 
+[Autologin]
+# La sesión live entra directamente en Plasma/KWin. Hyprland sigue siendo
+# una alternativa disponible desde el selector SDDM, no una ruta automática.
+User=danenone
+Session=plasma.desktop
+Relogin=false
+
 [Users]
 # Plasma se fija para la sesión live; Hyprland sólo se elige manualmente.
 RememberLastSession=false
@@ -50,10 +74,10 @@ EOF
 # SDDM preselecciona Plasma Wayland para la cuenta live sin ocultar el
 # selector. Hyprland continúa disponible como alternativa avanzada desde su
 # archivo .desktop instalado.
-cat > "$ROOTFS/var/lib/sddm/state.conf" <<'EOF'
+cat > "$ROOTFS/var/lib/sddm/state.conf" <<EOF
 [Last]
 User=danenone
-Session=plasma.desktop
+Session=${SDDM_DEFAULT_SESSION}
 EOF
 
 cat > "$ROOTFS/etc/influent-danenone/session-policy.conf" <<'EOF'
@@ -78,5 +102,7 @@ EOF
 cat >> "$ROOTFS/root/customize_airootfs.sh" <<'EOF'
 
 # La edición Plasma usa SDDM; Hyprland queda como sesión avanzada del selector.
+chown sddm:sddm /var/lib/sddm/state.conf
+chmod 0600 /var/lib/sddm/state.conf
 systemctl enable sddm.service || true
 EOF
