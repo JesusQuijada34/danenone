@@ -34,6 +34,19 @@ printf '%s\n' "EDITION_PROFILE=$EDITION" > "$OUTPUT/airootfs/etc/influent-daneno
 if [[ "$EDITION" == "plasma" || "$EDITION" == "plasma-lab" ]]; then
   "$ROOT/scripts/configure_plasma_edition.sh" "$OUTPUT" "$EDITION"
 fi
+if [[ "$EDITION" == "plasma-lab" ]]; then
+  LAB_REPO="${DANENONE_CALAMARES_LAB_REPO:-}"
+  if [[ -z "$LAB_REPO" || ! -f "$LAB_REPO/danenone-lab.db.tar.zst" || ! -f "$LAB_REPO/SHA256SUMS" ]]; then
+    printf 'Plasma Lab requiere DANENONE_CALAMARES_LAB_REPO con danenone-lab.db.tar.zst y SHA256SUMS.\n' >&2
+    exit 4
+  fi
+  LAB_REPO="$(realpath -e "$LAB_REPO")"
+  if ! (cd "$LAB_REPO" && sha256sum -c SHA256SUMS); then
+    printf 'El manifiesto SHA256 del repositorio Plasma Lab no es válido.\n' >&2
+    exit 5
+  fi
+  sed -i '78i[danenone-lab]\nSigLevel = Optional\nServer = file://'"$LAB_REPO"'\n' "$OUTPUT/pacman.conf"
+fi
 "$ROOT/scripts/prepare_archiso_foundstore_release.sh" "$OUTPUT"
 printf 'Perfil preparado: %s\nSalida: %s\n' "$EDITION" "$OUTPUT"
 printf 'No se ejecuta mkarchiso automáticamente; la compilación requiere un entorno Arch con los paquetes disponibles.\n'

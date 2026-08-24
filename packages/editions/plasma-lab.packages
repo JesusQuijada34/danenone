@@ -1,0 +1,18 @@
+# Plasma/KWin es el entorno único de Plasma Lab; Hyprland sigue como sesión avanzada.
+plasma-meta
+kwin
+sddm
+xdg-desktop-portal
+xdg-desktop-portal-kde
+plasma-nm
+plasma-pa
+powerdevil
+polkit-kde-agent
+breeze-gtk
+kde-gtk-config
+hyprland
+hyprpaper
+xdg-desktop-portal-hyprland
+# Sólo el repositorio local validado de Plasma Lab puede resolver estos paquetes.
+danenone-calamares
+danenone-calamares-config
